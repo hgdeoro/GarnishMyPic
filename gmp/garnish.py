@@ -12,18 +12,21 @@ import sys
 
 import pyexif
 
-from PIL import Image, ImageColor, ImageDraw, ImageFont
+from PIL import Image, ImageColor, ImageDraw, ImageFont, ImageOps
 
 FONT = os.environ.get('FONT', '/usr/share/fonts/truetype/droid/DroidSans-Bold.ttf')
 FONT_SIZE = int(os.environ.get('FONT_SIZE', '12'))
 SIZE = (800, 800,)
 OVERWRITE = os.environ.get('OVERWRITE', None)
 OUTPUT_QUALITY = int(os.environ.get('OUTPUT_QUALITY', '95'))
+BORDER = int(os.environ.get('BORDER', '4'))
 
 
 def main():
     src_filename = sys.argv[1]
     dst_filename = sys.argv[2]
+
+    THUMB_SIZE = (SIZE[0] - (BORDER * 4), SIZE[1] - (BORDER * 4))
 
     assert os.path.exists(src_filename), \
         "The input file '{0}' does not exists".format(src_filename)
@@ -41,9 +44,13 @@ def main():
     aperture = editor.getTag('Aperture')
 
     src_image = Image.open(src_filename)
-    src_image.thumbnail(SIZE, Image.ANTIALIAS)
+    src_image.thumbnail(THUMB_SIZE, Image.ANTIALIAS)
+
+    src_image = ImageOps.expand(src_image, border=4, fill='black')
+    src_image = ImageOps.expand(src_image, border=4, fill='white')
+
     w = src_image.size[0]
-    h = src_image.size[1] + 18
+    h = src_image.size[1] + 18 - BORDER
 
     font = ImageFont.truetype(FONT, FONT_SIZE)
 
@@ -51,7 +58,7 @@ def main():
     garnished.paste(src_image, (0, 0))
 
     from_left = 10
-    from_top = src_image.size[1] + 1
+    from_top = src_image.size[1] + 1 - BORDER
     draw = ImageDraw.Draw(garnished)
     text = u"'{title}' - ©{year} {author} - ISO: {iso} - Aperture: F/{aperture} - Shutter speed: {shutter}".format(
         title=title, year=year, author=author, iso=iso, aperture=aperture, shutter=shutter)
