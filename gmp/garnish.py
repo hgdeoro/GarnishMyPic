@@ -18,6 +18,7 @@ FONT = os.environ.get('FONT', '/usr/share/fonts/truetype/droid/DroidSans-Bold.tt
 FONT_SIZE = int(os.environ.get('FONT_SIZE', '12'))
 SIZE = (800, 800,)
 OVERWRITE = os.environ.get('OVERWRITE', None)
+OUTPUT_QUALITY = int(os.environ.get('OUTPUT_QUALITY', '95'))
 
 
 def main():
@@ -56,7 +57,7 @@ def main():
         title=title, year=year, author=author, iso=iso, aperture=aperture, shutter=shutter)
     draw.text([from_left, from_top], text, fill=ImageColor.getcolor('black', src_image.mode), font=font)
 
-    garnished.save(dst_filename)
+    garnished.save(dst_filename, quality=OUTPUT_QUALITY)
 
 
 if __name__ == '__main__':
