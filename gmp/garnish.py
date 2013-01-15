@@ -86,7 +86,7 @@ def main():
     garnished.paste(src_image, (0, 0))
 
     # TODO: check math for non-default thumb size
-    from_left = 10
+    from_left = 6
     from_top = src_image.size[1] + 1 - BORDER
 
     pos = from_left
@@ -142,6 +142,9 @@ def main():
     del draw
 
     garnished.save(dst_filename, quality=OUTPUT_QUALITY, format='JPEG')
+
+    if pos >= w:
+        raise(Exception("Image was saved OK, but text exceeded image width."))
 
     #    tmp = StringIO()
     #    garnished.save(tmp, quality=OUTPUT_QUALITY, format='JPEG')
