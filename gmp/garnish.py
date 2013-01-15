@@ -60,11 +60,19 @@ def main():
     from_left = 10
     from_top = src_image.size[1] + 1 - BORDER
     draw = ImageDraw.Draw(garnished)
-    text = u"'{title}' - ©{year} {author} - ISO: {iso} - Aperture: F/{aperture} - Shutter speed: {shutter}".format(
+    text = u"'{title}' ©{year} {author} - ISO: {iso} - Aperture: F/{aperture} - Shutter speed: {shutter}".format(
         title=title, year=year, author=author, iso=iso, aperture=aperture, shutter=shutter)
     draw.text([from_left, from_top], text, fill=ImageColor.getcolor('black', src_image.mode), font=font)
 
     garnished.save(dst_filename, quality=OUTPUT_QUALITY)
+
+    editor = pyexif.ExifEditor(dst_filename)
+    #    shutter = editor.getTag('ShutterSpeed')
+    #    iso = editor.getTag('ISOSetting')
+    #    aperture = editor.getTag('Aperture')
+    editor.setTag('ShutterSpeed', shutter)
+    editor.setTag('ISOSetting', iso)
+    editor.setTag('Aperture', aperture)
 
 
 if __name__ == '__main__':
