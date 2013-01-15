@@ -24,6 +24,20 @@ OVERWRITE = os.environ.get('OVERWRITE', None)
 OUTPUT_QUALITY = int(os.environ.get('OUTPUT_QUALITY', '95'))
 BORDER = int(os.environ.get('BORDER', '4'))
 
+#
+# How to get exiv information:
+#
+# - pyexif -> calls 'exiftool'
+# - pexif -> doesn't works with Nikon D3100
+# - PIL -> detects only a minimal subset compared to 'exiftool'
+#            exif = dict((ExifTags.TAGS.get(k, k), v) for (k, v) in src_image._getexif().items())
+#            import pprint
+#            pprint.pprint(exif)
+# - pyexiv2 -> requires compilation of libraries and can't be installed using pip
+#
+# Resolution: stick with 'pyexif' or call 'exiftool' manually...
+#
+
 
 def main():
     # TODO: check input file is JPEG
@@ -41,9 +55,11 @@ def main():
         assert not os.path.exists(dst_filename), \
             "The output file '{0}' already exists".format(dst_filename)
 
+    try:
+        author = os.environ['AUTHOR']
+    except KeyError:
+        raise(Exception("You must specify 'AUTHOR' environment variable"))
     title = os.environ.get('TITLE', None)
-    # TODO: don't use author/year if no author specified
-    author = os.environ.get('AUTHOR', None)
     year = os.environ.get('YEAR', datetime.date.today().year)
 
     editor = pyexif.ExifEditor(src_filename)
@@ -88,11 +104,7 @@ def main():
         pos = pos + text_width
 
     # Copyright
-    if author:
-        text = u"©{0} {1} ".format(year, author) # WITH trailing space!
-    else:
-        text = u"'{0}' ".format(author) # WITH trailing space!
-
+    text = u"©{0} {1} ".format(year, author) # WITH trailing space!
     draw.text([pos, from_top], text,
         fill=ImageColor.getcolor('black', src_image.mode), font=font)
     text_width = draw.textsize(text, font=font)[0]
