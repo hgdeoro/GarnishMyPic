@@ -10,10 +10,7 @@ import datetime
 import os
 import sys
 
-from StringIO import StringIO
-
 import pyexif
-import pexif
 
 from PIL import Image, ImageColor, ImageDraw, ImageFont, ImageOps
 
@@ -50,7 +47,6 @@ def main():
     author = os.environ.get('AUTHOR', '?')
     year = os.environ.get('YEAR', datetime.date.today().year)
 
-    # TODO: avoid using 'pyexif', use 'pexif' instead
     editor = pyexif.ExifEditor(src_filename)
 
     # TODO: check if this tags works with different cammers
@@ -84,15 +80,17 @@ def main():
     draw.text([from_left, from_top], text, fill=ImageColor.getcolor('black', src_image.mode), font=font)
     del draw
 
-    tmp = StringIO()
-    garnished.save(tmp, quality=OUTPUT_QUALITY, format='JPEG')
+    garnished.save(dst_filename, quality=OUTPUT_QUALITY, format='JPEG')
 
-    output = pexif.JpegFile.fromString(tmp.getvalue(), 'rw')
-    # TODO: this DOESN'T WORK!
-    output.exif.primary.ShutterSpeed = str(shutter)
-    output.exif.primary.ISOSetting = str(iso)
-    output.exif.primary.Aperture = str(aperture)
-    output.writeFile(dst_filename)
+    #    tmp = StringIO()
+    #    garnished.save(tmp, quality=OUTPUT_QUALITY, format='JPEG')
+    #
+    #    output = pexif.JpegFile.fromString(tmp.getvalue(), 'rw')
+    #    # T-O-D-O: this DOESN'T WORK!
+    #    output.exif.primary.ShutterSpeed = str(shutter)
+    #    output.exif.primary.ISOSetting = str(iso)
+    #    output.exif.primary.Aperture = str(aperture)
+    #    output.writeFile(dst_filename)
 
 if __name__ == '__main__':
         main()
