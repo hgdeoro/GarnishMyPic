@@ -65,9 +65,10 @@ def main():
     editor = pyexif.ExifEditor(src_filename)
 
     # TODO: check if this tags works with different cameras
-    shutter = editor.getTag('ShutterSpeed')
-    iso = editor.getTag('ISOSetting')
-    aperture = editor.getTag('Aperture')
+    shutter = os.environ.get('SHUTTER_SPEED', editor.getTag('ShutterSpeed'))
+    iso = os.environ.get('ISO', editor.getTag('ISOSetting'))
+    aperture = os.environ.get('APERTURE', editor.getTag('Aperture'))
+    camera = os.environ.get('CAMERA', None)
 
     src_image = Image.open(src_filename)
     src_image.thumbnail(THUMB_SIZE, Image.ANTIALIAS)
@@ -109,6 +110,13 @@ def main():
         fill=ImageColor.getcolor('black', src_image.mode), font=font)
     text_width = draw.textsize(text, font=font)[0]
     pos = pos + text_width
+
+    if camera:
+        text = "- Camera: {0} ".format(camera)
+        draw.text([pos, from_top], text,
+            fill=ImageColor.getcolor('black', src_image.mode), font=font)
+        text_width = draw.textsize(text, font=font)[0]
+        pos = pos + text_width
 
     if iso:
         text = "- ISO: {0} ".format(iso)
