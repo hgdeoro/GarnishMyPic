@@ -41,16 +41,14 @@ def main():
         assert not os.path.exists(dst_filename), \
             "The output file '{0}' already exists".format(dst_filename)
 
-    # TODO: don't use title if no specified
-    title = os.environ.get('TITLE', '?')
+    title = os.environ.get('TITLE', None)
     # TODO: don't use author/year if no author specified
-    author = os.environ.get('AUTHOR', '?')
+    author = os.environ.get('AUTHOR', None)
     year = os.environ.get('YEAR', datetime.date.today().year)
 
     editor = pyexif.ExifEditor(src_filename)
 
-    # TODO: check if this tags works with different cammers
-    # TODO: don't put information exif that doens't exists
+    # TODO: check if this tags works with different cameras
     shutter = editor.getTag('ShutterSpeed')
     iso = editor.getTag('ISOSetting')
     aperture = editor.getTag('Aperture')
@@ -74,10 +72,53 @@ def main():
     from_left = 10
     from_top = src_image.size[1] + 1 - BORDER
 
+    pos = from_left
+
     draw = ImageDraw.Draw(garnished)
-    text = u"'{title}' ©{year} {author} - ISO: {iso} - Aperture: F/{aperture} - Shutter speed: {shutter}".format(
-        title=title, year=year, author=author, iso=iso, aperture=aperture, shutter=shutter)
-    draw.text([from_left, from_top], text, fill=ImageColor.getcolor('black', src_image.mode), font=font)
+
+    #    text = u"'{title}' ©{year} {author} - ISO: {iso} - Aperture: F/{aperture} - Shutter speed: {shutter}".format(
+    #        title=title, year=year, author=author, iso=iso, aperture=aperture, shutter=shutter)
+    #    draw.text([from_left, from_top], text, fill=ImageColor.getcolor('black', src_image.mode), font=font)
+
+    if title:
+        text = u"'{0}' ".format(title) # WITH trailing space!
+        draw.text([pos, from_top], text,
+            fill=ImageColor.getcolor('black', src_image.mode), font=font)
+        text_width = draw.textsize(text, font=font)[0]
+        pos = pos + text_width
+
+    # Copyright
+    if author:
+        text = u"©{0} {1} ".format(year, author) # WITH trailing space!
+    else:
+        text = u"'{0}' ".format(author) # WITH trailing space!
+
+    draw.text([pos, from_top], text,
+        fill=ImageColor.getcolor('black', src_image.mode), font=font)
+    text_width = draw.textsize(text, font=font)[0]
+    pos = pos + text_width
+
+    if iso:
+        text = "- ISO: {0} ".format(iso)
+        draw.text([pos, from_top], text,
+            fill=ImageColor.getcolor('black', src_image.mode), font=font)
+        text_width = draw.textsize(text, font=font)[0]
+        pos = pos + text_width
+
+    if aperture:
+        text = "- Aperture: F/{0} ".format(aperture)
+        draw.text([pos, from_top], text,
+            fill=ImageColor.getcolor('black', src_image.mode), font=font)
+        text_width = draw.textsize(text, font=font)[0]
+        pos = pos + text_width
+
+    if shutter:
+        text = "- Shutter speed: {0} ".format(shutter)
+        draw.text([pos, from_top], text,
+            fill=ImageColor.getcolor('black', src_image.mode), font=font)
+        text_width = draw.textsize(text, font=font)[0]
+        pos = pos + text_width
+
     del draw
 
     garnished.save(dst_filename, quality=OUTPUT_QUALITY, format='JPEG')
