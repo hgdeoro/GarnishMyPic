@@ -15,22 +15,34 @@ import pyexif
 from PIL import Image, ImageColor, ImageDraw, ImageFont
 
 FONT = os.environ.get('FONT', '/usr/share/fonts/truetype/droid/DroidSans-Bold.ttf')
-FONT_SIZE = int(os.environ.get('FONT_SIZE', '14'))
+FONT_SIZE = int(os.environ.get('FONT_SIZE', '12'))
+SIZE = (800, 800,)
+OVERWRITE = os.environ.get('OVERWRITE', None)
 
 
 def main():
+    src_filename = sys.argv[1]
+    dst_filename = sys.argv[2]
+
+    assert os.path.exists(src_filename), \
+        "The input file '{0}' does not exists".format(src_filename)
+    if OVERWRITE is None:
+        assert not os.path.exists(dst_filename), \
+            "The output file '{0}' already exists".format(dst_filename)
+
     title = os.environ.get('TITLE', '?')
     author = os.environ.get('AUTHOR', '?')
     year = os.environ.get('YEAR', datetime.date.today().year)
 
-    editor = pyexif.ExifEditor(sys.argv[1])
+    editor = pyexif.ExifEditor(src_filename)
     shutter = editor.getTag('ShutterSpeed')
     iso = editor.getTag('ISOSetting')
     aperture = editor.getTag('Aperture')
 
-    src_image = Image.open(sys.argv[1])
+    src_image = Image.open(src_filename)
+    src_image.thumbnail(SIZE, Image.ANTIALIAS)
     w = src_image.size[0]
-    h = src_image.size[1] + 100
+    h = src_image.size[1] + 18
 
     font = ImageFont.truetype(FONT, FONT_SIZE)
 
@@ -38,13 +50,13 @@ def main():
     garnished.paste(src_image, (0, 0))
 
     from_left = 10
-    from_top = src_image.size[1] + 5
+    from_top = src_image.size[1] + 1
     draw = ImageDraw.Draw(garnished)
     text = u"'{title}' - ©{year} {author} - ISO: {iso} - Aperture: F/{aperture} - Shutter speed: {shutter}".format(
         title=title, year=year, author=author, iso=iso, aperture=aperture, shutter=shutter)
     draw.text([from_left, from_top], text, fill=ImageColor.getcolor('black', src_image.mode), font=font)
 
-    garnished.save(sys.argv[2])
+    garnished.save(dst_filename)
 
 
 if __name__ == '__main__':
