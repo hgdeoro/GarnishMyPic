@@ -13,13 +13,16 @@ import subprocess
 
 from PIL import Image, ImageColor, ImageDraw, ImageFont, ImageOps
 
+
 # TODO: remove all these env. variables and use program arguments
 # TODO: use system font or add font file - check license!
-FONT = os.environ.get('FONT', '/usr/share/fonts/truetype/droid/DroidSans-Bold.ttf')
-FONT_SIZE = int(os.environ.get('FONT_SIZE', '12'))
 SIZE = (800, 800,)
 OUTPUT_QUALITY = int(os.environ.get('OUTPUT_QUALITY', '95'))
 BORDER = int(os.environ.get('BORDER', '4'))
+
+# Defaults
+DEFAULT_FONT = '/usr/share/fonts/truetype/droid/DroidSans-Bold.ttf'
+DEFAULT_FONT_SIZE = 12
 
 #
 # How to get exiv information:
@@ -46,7 +49,7 @@ class ExifInfo(object):
 
 
 def _get_exif_info_pyexif(filename):
-    import pyexif
+    import pyexif #@UnresolvedImport
     editor = pyexif.ExifEditor(filename)
     # TODO: check if this tags works with different cameras
     return ExifInfo(filename, editor.getTag('ISOSetting'), editor.getTag('Aperture'),
@@ -105,7 +108,7 @@ def copy_exif_info(src_filename, dst_filename):
     )
 
 
-def do_garnish(src_filename, dst_filename, author=None, overwrite=False):
+def do_garnish(src_filename, dst_filename, author=None, overwrite=False, font_file=None, font_size=None):
     # TODO: check input file is JPEG
     # TODO: check output file extension is JPEG
 
@@ -134,7 +137,7 @@ def do_garnish(src_filename, dst_filename, author=None, overwrite=False):
     w = src_image.size[0]
     h = src_image.size[1] + 18 - BORDER
 
-    font = ImageFont.truetype(FONT, FONT_SIZE)
+    font = ImageFont.truetype(font_file or DEFAULT_FONT, font_size or DEFAULT_FONT_SIZE)
 
     garnished = Image.new(src_image.mode, [w, h], ImageColor.getcolor('white', src_image.mode))
     garnished.paste(src_image, (0, 0))
@@ -218,7 +221,12 @@ if __name__ == '__main__':
     parser.add_argument("src_file", help="Path to the original photography")
     parser.add_argument("dst_file", help="Path where to create the thumbnail")
     parser.add_argument("--author", help="Author information")
-    parser.add_argument("--overwrite", help="Overwrite dst_file if exists", action='store_true')
+    parser.add_argument("--font", help="Path to the TrueType font to use",
+        default=DEFAULT_FONT)
+    parser.add_argument("--font-size", help="Size of text",
+        type=int, default=DEFAULT_FONT_SIZE)
+    parser.add_argument("--overwrite", help="Overwrite dst_file if exists",
+        action='store_true')
     args = parser.parse_args()
 
     if not args.author and not os.environ.get('GMP_AUTHOR'):
@@ -227,4 +235,6 @@ if __name__ == '__main__':
 
     do_garnish(args.src_file, args.dst_file,
         author=args.author,
-        overwrite=args.overwrite)
+        overwrite=args.overwrite,
+        font_file=args.font,
+        font_size=args.font_size)
