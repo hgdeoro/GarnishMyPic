@@ -8,13 +8,17 @@ Created on Jan 14, 2013
 
 import datetime
 import json
+import logging
 import os
 import subprocess
+import sys
 
 from PIL import Image, ImageColor, ImageDraw, ImageFont, ImageOps
 
-
 # TODO: use system font or add font file - check license!
+
+logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.INFO)
+logger = logging.getLogger('GarnishMyPic')
 
 # Defaults
 DEFAULT_FONT = '/usr/share/fonts/truetype/droid/DroidSans-Bold.ttf'
@@ -117,12 +121,17 @@ def do_garnish(src_filename, dst_filename, author=None, overwrite=False,
     THUMB_SIZE = (max_size[0] - (border_size * 4), max_size[1] - (border_size * 4))
 
     # TODO: enhance error message
-    assert os.path.exists(src_filename), \
-        "The input file '{0}' does not exists".format(src_filename)
-    if not overwrite:
-        # TODO: enhance error message
-        assert not os.path.exists(dst_filename), \
-            "The output file '{0}' already exists".format(dst_filename)
+    if not os.path.exists(src_filename):
+        logger.error("The input file '%s' does not exists", src_filename)
+        sys.exit(1)
+
+    if overwrite:
+        if os.path.exists(dst_filename):
+            logger.info("Will overwrite output file '%s'", dst_filename)
+    else:
+        if os.path.exists(dst_filename):
+            logger.error("The output file '%s' already exists", dst_filename)
+            sys.exit(1)
 
     title = os.environ.get('TITLE', None)
     year = os.environ.get('YEAR', datetime.date.today().year)
@@ -203,7 +212,7 @@ def do_garnish(src_filename, dst_filename, author=None, overwrite=False,
     garnished.save(dst_filename, quality=output_quality, format='JPEG')
 
     if pos >= w:
-        raise(Exception("Image was saved OK, but text exceeded image width."))
+        logger.warn("Image was saved OK, but text exceeded image width")
 
     copy_exif_info(src_filename, dst_filename)
 
@@ -219,10 +228,14 @@ def do_garnish(src_filename, dst_filename, author=None, overwrite=False,
 
 if __name__ == '__main__':
     import argparse
+
+    GMP_AUTHOR = os.environ.get('GMP_AUTHOR', None)
+
     parser = argparse.ArgumentParser()
     parser.add_argument("src_file", help="Path to the original photography")
     parser.add_argument("dst_file", help="Path where to create the thumbnail")
-    parser.add_argument("--author", help="Author information")
+    parser.add_argument("--author", help="Author information (this script also checks "
+        "for the GMP_AUTHOR environment variable", default=GMP_AUTHOR)
     parser.add_argument("--overwrite", help="Overwrite dst_file if exists",
         action='store_true')
     parser.add_argument("--output-quality", help="Quality of generated JPG (1-100)",
@@ -236,7 +249,7 @@ if __name__ == '__main__':
     parser.add_argument("--max-size", help="Max size of output image")
     args = parser.parse_args()
 
-    if not args.author and not os.environ.get('GMP_AUTHOR'):
+    if not args.author:
         parser.error("You must specify 'GMP_AUTHOR' environment variable, "
             "or the --author argument")
 
