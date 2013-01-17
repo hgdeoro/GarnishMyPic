@@ -7,18 +7,17 @@ Created on Jan 14, 2013
 '''
 
 import datetime
+import json
 import os
+import subprocess
 
 from PIL import Image, ImageColor, ImageDraw, ImageFont, ImageOps
-import subprocess
-import json
 
 # TODO: remove all these env. variables and use program arguments
 # TODO: use system font or add font file - check license!
 FONT = os.environ.get('FONT', '/usr/share/fonts/truetype/droid/DroidSans-Bold.ttf')
 FONT_SIZE = int(os.environ.get('FONT_SIZE', '12'))
 SIZE = (800, 800,)
-OVERWRITE = os.environ.get('OVERWRITE', None)
 OUTPUT_QUALITY = int(os.environ.get('OUTPUT_QUALITY', '95'))
 BORDER = int(os.environ.get('BORDER', '4'))
 
@@ -106,7 +105,7 @@ def copy_exif_info(src_filename, dst_filename):
     )
 
 
-def do_garnish(src_filename, dst_filename):
+def do_garnish(src_filename, dst_filename, author=None, overwrite=False):
     # TODO: check input file is JPEG
     # TODO: check output file extension is JPEG
 
@@ -115,15 +114,11 @@ def do_garnish(src_filename, dst_filename):
     # TODO: enhance error message
     assert os.path.exists(src_filename), \
         "The input file '{0}' does not exists".format(src_filename)
-    if OVERWRITE is None:
+    if not overwrite:
         # TODO: enhance error message
         assert not os.path.exists(dst_filename), \
             "The output file '{0}' already exists".format(dst_filename)
 
-    try:
-        author = os.environ['AUTHOR']
-    except KeyError:
-        raise(Exception("You must specify 'AUTHOR' environment variable"))
     title = os.environ.get('TITLE', None)
     year = os.environ.get('YEAR', datetime.date.today().year)
 
@@ -218,11 +213,21 @@ def do_garnish(src_filename, dst_filename):
     #    output.writeFile(dst_filename)
 
 if __name__ == '__main__':
-    # TODO: get parameters/config from arguments
-    import sys
-    src_filename = sys.argv[1]
-    dst_filename = sys.argv[2]
-    do_garnish(src_filename, dst_filename)
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("src_file", help="Path to the original photography")
+    parser.add_argument("dst_file", help="Path where to create the thumbnail")
+    parser.add_argument("--author", help="Author information")
+    parser.add_argument("--overwrite", help="Overwrite dst_file if exists", action='store_true')
+    args = parser.parse_args()
+
+    if not args.author and not os.environ.get('GMP_AUTHOR'):
+        parser.error("You must specify 'GMP_AUTHOR' environment variable, "
+            "or the --author argument")
+
+    do_garnish(args.src_file, args.dst_file,
+        author=args.author,
+        overwrite=args.overwrite)
 
 
 #===============================================================================
@@ -421,6 +426,164 @@ if __name__ == '__main__':
 #    WhiteBalance
 #    WhiteBalanceFineTune
 #    XMPToolkit
+#    XResolution
+#    YCbCrPositioning
+#    YCbCrSubSampling
+#    YResolution
+#===============================================================================
+
+#===============================================================================
+# Full list of tags (reported by 'exiftool -s -u FILE.JPG | cut -d : -f 1| sort ') of a Panasonic Lumix DMC-ZR1
+#===============================================================================
+#    AdvancedSceneMode
+#    AFAreaMode
+#    AFAssistLamp
+#    AFPointPosition
+#    Aperture
+#    Audio
+#    BabyAge
+#    BitsPerSample
+#    BlueBalance
+#    BurstMode
+#    CircleOfConfusion
+#    ColorComponents
+#    ColorEffect
+#    ColorMode
+#    ColorSpace
+#    ComponentsConfiguration
+#    CompressedBitsPerPixel
+#    Compression
+#    Contrast
+#    ContrastMode
+#    ConversionLens
+#    CreateDate
+#    CustomRendered
+#    DataDump
+#    DateTimeOriginal
+#    DependentImage1EntryNumber
+#    DependentImage2EntryNumber
+#    DigitalZoomRatio
+#    Directory
+#    EncodingProcess
+#    ExifByteOrder
+#    ExifImageHeight
+#    ExifImageWidth
+#    ExifToolVersion
+#    ExifVersion
+#    ExposureCompensation
+#    ExposureMode
+#    ExposureProgram
+#    ExposureTime
+#    FacesDetected
+#    FacesRecognized
+#    FileModifyDate
+#    FileName
+#    FilePermissions
+#    FileSize
+#    FileSource
+#    FileType
+#    FirmwareVersion
+#    Flash
+#    FlashBias
+#    FlashFired
+#    FlashpixVersion
+#    FlashWarning
+#    FNumber
+#    FocalLength
+#    FocalLength35efl
+#    FocalLengthIn35mmFormat
+#    FocusMode
+#    FOV
+#    GainControl
+#    HyperfocalDistance
+#    ImageHeight
+#    ImageQuality
+#    ImageSize
+#    ImageStabilization
+#    ImageWidth
+#    IntelligentExposure
+#    InternalSerialNumber
+#    InteropIndex
+#    InteropVersion
+#    ISO
+#    LightSource
+#    LightValue
+#    MacroMode
+#    Make
+#    MakerNoteVersion
+#    MaxApertureValue
+#    MeteringMode
+#    MIMEType
+#    Model
+#    ModifyDate
+#    MPFVersion
+#    MPImageFlags
+#    MPImageFormat
+#    MPImageLength
+#    MPImageStart
+#    MPImageType
+#    NoiseReduction
+#    NumberOfImages
+#    NumFacePositions
+#    OpticalZoomMode
+#    Orientation
+#    Panasonic_0x0022
+#    Panasonic_0x0027
+#    Panasonic_0x002f
+#    Panasonic_0x0037
+#    Panasonic_0x0038
+#    Panasonic_0x004f
+#    Panasonic_0x0057
+#    Panasonic_0x005e
+#    Panasonic_0x8002
+#    Panasonic_0x8003
+#    PanasonicExifVersion
+#    PreviewImage
+#    PrintIM_0x0001
+#    PrintIM_0x0002
+#    PrintIM_0x0003
+#    PrintIM_0x0007
+#    PrintIM_0x0008
+#    PrintIM_0x0009
+#    PrintIM_0x000a
+#    PrintIM_0x000b
+#    PrintIM_0x000c
+#    PrintIM_0x000d
+#    PrintIM_0x000e
+#    PrintIM_0x0100
+#    PrintIM_0x0101
+#    PrintIM_0x0110
+#    PrintIMVersion
+#    ProgramISO
+#    RecognizedFaceFlags
+#    RedBalance
+#    ResolutionUnit
+#    Rotation
+#    Saturation
+#    ScaleFactor35efl
+#    SceneCaptureType
+#    SceneMode
+#    SceneType
+#    SelfTimer
+#    SensingMethod
+#    SequenceNumber
+#    Sharpness
+#    ShootingMode
+#    ShutterSpeed
+#    Software
+#    TextStamp
+#    ThumbnailImage
+#    ThumbnailLength
+#    ThumbnailOffset
+#    TimeSincePowerOn
+#    Transform
+#    TravelDay
+#    WBBlueLevel
+#    WBGreenLevel
+#    WBRedLevel
+#    WhiteBalance
+#    WhiteBalanceBias
+#    WorldTimeLocation
 #    XResolution
 #    YCbCrPositioning
 #    YCbCrSubSampling
