@@ -88,6 +88,24 @@ def get_exif_info(filename):
     return _get_exif_info_exiftool(filename)
 
 
+def copy_exif_info(src_filename, dst_filename):
+    exif_tags = TRY4ISO + TRY4APERTURE + TRY4SHUTTER + TRY4CAMERA
+    subprocess.check_output(
+        (
+            'exiftool',
+            '-all=',
+            '-tagsFromFile',
+            src_filename,
+        )
+        +
+        tuple("-exif:{0}".format(tag_name) for tag_name in exif_tags)
+        +
+        (
+            dst_filename,
+        )
+    )
+
+
 def do_garnish(src_filename, dst_filename):
     # TODO: check input file is JPEG
     # TODO: check output file extension is JPEG
@@ -186,6 +204,8 @@ def do_garnish(src_filename, dst_filename):
 
     if pos >= w:
         raise(Exception("Image was saved OK, but text exceeded image width."))
+
+    copy_exif_info(src_filename, dst_filename)
 
     #    tmp = StringIO()
     #    garnished.save(tmp, quality=OUTPUT_QUALITY, format='JPEG')
