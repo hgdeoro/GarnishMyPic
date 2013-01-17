@@ -8,8 +8,7 @@ import os
 import tempfile
 import unittest
 
-from gmp import garnish
-from gmp.garnish import _exiftool_get_json
+import garnish
 
 
 class BasicTest(unittest.TestCase):
@@ -20,7 +19,7 @@ class BasicTest(unittest.TestCase):
         assert os.path.exists(self.test_image_01_filename)
 
     def test_exiftool_get_json(self):
-        json_data = _exiftool_get_json(self.test_image_01_filename)
+        json_data = garnish._exiftool_get_json(self.test_image_01_filename)
         self.assertTrue('Model' in json_data[0])
         self.assertTrue('Make' in json_data[0])
 
