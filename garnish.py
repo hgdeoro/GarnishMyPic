@@ -20,15 +20,8 @@ from PIL import Image, ImageColor, ImageDraw, ImageFont, ImageOps
 logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.INFO)
 logger = logging.getLogger('GarnishMyPic')
 
-# Defaults
-DEFAULT_FONT = '/usr/share/fonts/truetype/droid/DroidSans-Bold.ttf'
-DEFAULT_FONT_SIZE = 12
-DEFAULT_OUTPUT_QUALITY = int(os.environ.get('OUTPUT_QUALITY', '95'))
-DEFAULT_BORDER = int(os.environ.get('BORDER', '4'))
-DEFAULT_MAX_SIZE = (800, 800,)
-
 #
-# How to get exiv information:
+# Different ways to get exiv information:
 #
 # - pyexif -> calls 'exiftool'
 # - pexif -> doesn't works with Nikon D3100
@@ -49,14 +42,6 @@ class ExifInfo(object):
         self.aperture = os.environ.get('APERTURE', aperture)
         self.shutter = os.environ.get('SHUTTER_SPEED', shutter)
         self.camera = os.environ.get('CAMERA', camera)
-
-
-def _get_exif_info_pyexif(filename):
-    import pyexif #@UnresolvedImport
-    editor = pyexif.ExifEditor(filename)
-    # TODO: check if this tags works with different cameras
-    return ExifInfo(filename, editor.getTag('ISOSetting'), editor.getTag('Aperture'),
-        editor.getTag('ShutterSpeed'), None)
 
 
 TRY4CAMERA = ('Model', 'Make',)
@@ -112,13 +97,19 @@ def copy_exif_info(src_filename, dst_filename):
 
 
 def do_garnish(src_filename, dst_filename, author=None, overwrite=False,
-    font_file=DEFAULT_FONT, font_size=DEFAULT_FONT_SIZE,
-    output_quality=DEFAULT_OUTPUT_QUALITY, border_size=DEFAULT_BORDER,
-    max_size=DEFAULT_MAX_SIZE, title=None, year=None):
+    font_file=None, font_size=None,
+    output_quality=None, border_size=None,
+    max_size=None, title=None, year=None):
+
     # TODO: check input file is JPEG
     # TODO: check output file extension is JPEG
 
     assert author is not None
+    assert font_file is not None
+    assert font_size is not None
+    assert output_quality is not None
+    assert border_size is not None
+    assert max_size is not None
     assert year is not None
 
     THUMB_SIZE = (max_size[0] - (border_size * 4), max_size[1] - (border_size * 4))
@@ -225,7 +216,57 @@ def do_garnish(src_filename, dst_filename, author=None, overwrite=False,
 if __name__ == '__main__':
     import argparse
 
+    #===============================================================================
+    # Some settings that are globlal could be setted with environment variables
+    # (those that are the same for different pics)
+    #===============================================================================
+
     GMP_AUTHOR = os.environ.get('GMP_AUTHOR', None)
+
+    try:
+        GMP_OUTPUT_QUALITY = int(os.environ['GMP_OUTPUT_QUALITY'])
+    except KeyError:
+        # TODO: log warn message
+        GMP_OUTPUT_QUALITY = 95
+    except ValueError:
+        # TODO: log warn message
+        GMP_OUTPUT_QUALITY = 95
+
+    try:
+        GMP_BORDER = int(os.environ['GMP_DEFAULT_BORDER'])
+    except KeyError:
+        # TODO: log warn message
+        GMP_BORDER = 4
+    except ValueError:
+        # TODO: log warn message
+        GMP_BORDER = 4
+
+    try:
+        GMP_FONT = int(os.environ['GMP_DEFAULT_FONT'])
+    except KeyError:
+        # TODO: log warn message
+        GMP_FONT = '/usr/share/fonts/truetype/droid/DroidSans-Bold.ttf'
+    except ValueError:
+        # TODO: log warn message
+        GMP_FONT = '/usr/share/fonts/truetype/droid/DroidSans-Bold.ttf'
+
+    try:
+        GMP_FONT_SIZE = int(os.environ['GMP_DEFAULT_FONT_SIZE'])
+    except KeyError:
+        # TODO: log warn message
+        GMP_FONT_SIZE = 12
+    except ValueError:
+        # TODO: log warn message
+        GMP_FONT_SIZE = 12
+
+    try:
+        GMP_MAX_SIZE = int(os.environ['GMP_DEFAULT_MAX_SIZE'])
+    except KeyError:
+        # TODO: log warn message
+        GMP_MAX_SIZE = '800x800'
+    except ValueError:
+        # TODO: log warn message
+        GMP_MAX_SIZE = '800x800'
 
     parser = argparse.ArgumentParser()
     parser.add_argument("src_file", help="Path to the original photography")
@@ -238,14 +279,15 @@ if __name__ == '__main__':
     parser.add_argument("--overwrite", help="Overwrite dst_file if exists",
         action='store_true')
     parser.add_argument("--output-quality", help="Quality of generated JPG (1-100)",
-        type=int, default=DEFAULT_OUTPUT_QUALITY)
+        type=int, default=GMP_OUTPUT_QUALITY)
     parser.add_argument("--border-size", help="Border size in pixels",
-        type=int, default=DEFAULT_BORDER)
+        type=int, default=GMP_BORDER)
     parser.add_argument("--font", help="Path to the TrueType font to use",
-        default=DEFAULT_FONT)
+        default=GMP_FONT)
     parser.add_argument("--font-size", help="Size of text",
-        type=int, default=DEFAULT_FONT_SIZE)
-    parser.add_argument("--max-size", help="Max size of output image")
+        type=int, default=GMP_FONT_SIZE)
+    parser.add_argument("--max-size", help="Max size of output image",
+        default=GMP_MAX_SIZE)
     args = parser.parse_args()
 
     if not args.author:
@@ -253,12 +295,15 @@ if __name__ == '__main__':
             "or the --author argument")
 
     # TODO: check proper conversion of these int()s and show error message on error
-    if args.max_size is not None:
+    try:
         max_size = [int(size) for size in args.max_size.split('x')]
-        if len(max_size) != 2:
-            parser.error("Wrong --max-size: must specify in the form WIDTHxHEIGHT")
-    else:
-        max_size = DEFAULT_MAX_SIZE
+    except KeyError:
+        parser.error("Wrong --max-size: must specify in the form WIDTHxHEIGHT (ej: 800x800)")
+    except ValueError:
+        parser.error("Wrong --max-size: must specify in the form WIDTHxHEIGHT (ej: 800x800)")
+
+    if len(max_size) != 2:
+        parser.error("Wrong --max-size: must specify in the form WIDTHxHEIGHT (ej: 800x800)")
 
     do_garnish(args.src_file, args.dst_file,
         author=args.author,

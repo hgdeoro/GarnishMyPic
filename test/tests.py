@@ -25,8 +25,18 @@ class BasicTest(unittest.TestCase):
 
     def test_with_test_image_01(self):
         _, filename = tempfile.mkstemp(".jpg", "_gmp_test_")
-        garnish.do_garnish(self.test_image_01_filename, filename,
+        garnish.do_garnish(
+            self.test_image_01_filename,
+            filename,
+            title='Some test',
             author='John Doe <jd@example.com>',
-            overwrite=True, year=2000)
+            overwrite=True,
+            year=2000,
+            font_file='/usr/share/fonts/truetype/droid/DroidSans-Bold.ttf',
+            font_size=12,
+            output_quality=90,
+            border_size=4,
+            max_size=(800, 800,)
+        )
         # ls -1rt /tmp/_gmp_test_*.jpg | tail -n 1 | xargs kde-open
         print "Generated OK - Output file {0}".format(filename)
