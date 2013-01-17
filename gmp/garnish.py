@@ -8,14 +8,10 @@ Created on Jan 14, 2013
 
 import datetime
 import os
-import sys
-
-import pyexif
 
 from PIL import Image, ImageColor, ImageDraw, ImageFont, ImageOps
 
-# TODO: get parameters/config from arguments
-
+# TODO: remove all these env. variables and use program arguments
 # TODO: use system font or add font file - check license!
 FONT = os.environ.get('FONT', '/usr/share/fonts/truetype/droid/DroidSans-Bold.ttf')
 FONT_SIZE = int(os.environ.get('FONT_SIZE', '12'))
@@ -39,11 +35,26 @@ BORDER = int(os.environ.get('BORDER', '4'))
 #
 
 
-def main():
+class ExifInfo(object):
+    def __init__(self, filename, iso, aperture, shutter, camera):
+        self.filename = filename
+        self.iso = os.environ.get('ISO', iso)
+        self.aperture = os.environ.get('APERTURE', aperture)
+        self.shutter = os.environ.get('SHUTTER_SPEED', shutter)
+        self.camera = os.environ.get('CAMERA', camera)
+
+
+def get_exif_info(filename):
+    import pyexif
+    editor = pyexif.ExifEditor(filename)
+    # TODO: check if this tags works with different cameras
+    return ExifInfo(filename, editor.getTag('ISOSetting'), editor.getTag('Aperture'),
+        editor.getTag('ShutterSpeed'), None)
+
+
+def do_garnish(src_filename, dst_filename):
     # TODO: check input file is JPEG
     # TODO: check output file extension is JPEG
-    src_filename = sys.argv[1]
-    dst_filename = sys.argv[2]
 
     THUMB_SIZE = (SIZE[0] - (BORDER * 4), SIZE[1] - (BORDER * 4))
 
@@ -62,13 +73,7 @@ def main():
     title = os.environ.get('TITLE', None)
     year = os.environ.get('YEAR', datetime.date.today().year)
 
-    editor = pyexif.ExifEditor(src_filename)
-
-    # TODO: check if this tags works with different cameras
-    shutter = os.environ.get('SHUTTER_SPEED', editor.getTag('ShutterSpeed'))
-    iso = os.environ.get('ISO', editor.getTag('ISOSetting'))
-    aperture = os.environ.get('APERTURE', editor.getTag('Aperture'))
-    camera = os.environ.get('CAMERA', None)
+    exif_info = get_exif_info(src_filename)
 
     src_image = Image.open(src_filename)
     src_image.thumbnail(THUMB_SIZE, Image.ANTIALIAS)
@@ -111,29 +116,29 @@ def main():
     text_width = draw.textsize(text, font=font)[0]
     pos = pos + text_width
 
-    if camera:
-        text = "- Camera: {0} ".format(camera)
+    if exif_info.camera:
+        text = "- Camera: {0} ".format(exif_info.camera)
         draw.text([pos, from_top], text,
             fill=ImageColor.getcolor('black', src_image.mode), font=font)
         text_width = draw.textsize(text, font=font)[0]
         pos = pos + text_width
 
-    if iso:
-        text = "- ISO: {0} ".format(iso)
+    if exif_info.iso:
+        text = "- ISO: {0} ".format(exif_info.iso)
         draw.text([pos, from_top], text,
             fill=ImageColor.getcolor('black', src_image.mode), font=font)
         text_width = draw.textsize(text, font=font)[0]
         pos = pos + text_width
 
-    if aperture:
-        text = "- Aperture: F/{0} ".format(aperture)
+    if exif_info.aperture:
+        text = "- Aperture: F/{0} ".format(exif_info.aperture)
         draw.text([pos, from_top], text,
             fill=ImageColor.getcolor('black', src_image.mode), font=font)
         text_width = draw.textsize(text, font=font)[0]
         pos = pos + text_width
 
-    if shutter:
-        text = "- Shutter speed: {0} ".format(shutter)
+    if exif_info.shutter:
+        text = "- Shutter speed: {0} ".format(exif_info.shutter)
         draw.text([pos, from_top], text,
             fill=ImageColor.getcolor('black', src_image.mode), font=font)
         text_width = draw.textsize(text, font=font)[0]
@@ -157,4 +162,8 @@ def main():
     #    output.writeFile(dst_filename)
 
 if __name__ == '__main__':
-        main()
+    # TODO: get parameters/config from arguments
+    import sys
+    src_filename = sys.argv[1]
+    dst_filename = sys.argv[2]
+    do_garnish(src_filename, dst_filename)
