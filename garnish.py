@@ -100,6 +100,9 @@ def do_garnish(src_filename, dst_filename, author=None, overwrite=False,
     font_file=None, font_size=None,
     output_quality=None, border_size=None,
     max_size=None, title=None, year=None):
+    """
+    Process the pic and garnish it. Returns the 'exit status'.
+    """
 
     # TODO: check input file is JPEG
     # TODO: check output file extension is JPEG
@@ -117,7 +120,7 @@ def do_garnish(src_filename, dst_filename, author=None, overwrite=False,
     # TODO: enhance error message
     if not os.path.exists(src_filename):
         logger.error("The input file '%s' does not exists", src_filename)
-        sys.exit(1)
+        return 1
 
     if overwrite:
         if os.path.exists(dst_filename):
@@ -125,13 +128,20 @@ def do_garnish(src_filename, dst_filename, author=None, overwrite=False,
     else:
         if os.path.exists(dst_filename):
             logger.error("The output file '%s' already exists", dst_filename)
-            sys.exit(1)
+            return 1
 
+    # Open the image
+    try:
+        src_image = Image.open(src_filename)
+    except:
+        logger.error("Couldn't load an image from file %s. Check if it's realy an image", src_filename)
+        return 1
+
+    # Get the exif info
     exif_info = get_exif_info(src_filename)
 
-    src_image = Image.open(src_filename)
+    # Create the thumb and add the border
     src_image.thumbnail(THUMB_SIZE, Image.ANTIALIAS)
-
     src_image = ImageOps.expand(src_image, border=border_size, fill='black')
     src_image = ImageOps.expand(src_image, border=border_size, fill='white')
 
@@ -139,7 +149,15 @@ def do_garnish(src_filename, dst_filename, author=None, overwrite=False,
     w = src_image.size[0]
     h = src_image.size[1] + 18 - border_size
 
-    font = ImageFont.truetype(font_file, font_size)
+    try:
+        font = ImageFont.truetype(font_file, font_size)
+    except:
+        if os.path.exists(font_file):
+            logger.error("Couldn't load font from file '%s'", font_file)
+            return 1
+        else:
+            logger.error("The specified font file doens't exists: %s", font_file)
+            return 1
 
     garnished = Image.new(src_image.mode, [w, h], ImageColor.getcolor('white', src_image.mode))
     garnished.paste(src_image, (0, 0))
@@ -203,15 +221,7 @@ def do_garnish(src_filename, dst_filename, author=None, overwrite=False,
 
     copy_exif_info(src_filename, dst_filename)
 
-    #    tmp = StringIO()
-    #    garnished.save(tmp, quality=OUTPUT_QUALITY, format='JPEG')
-    #
-    #    output = pexif.JpegFile.fromString(tmp.getvalue(), 'rw')
-    #    # T-O-D-O: this DOESN'T WORK!
-    #    output.exif.primary.ShutterSpeed = str(shutter)
-    #    output.exif.primary.ISOSetting = str(iso)
-    #    output.exif.primary.Aperture = str(aperture)
-    #    output.writeFile(dst_filename)
+    return 0
 
 if __name__ == '__main__':
     import argparse
@@ -305,7 +315,7 @@ if __name__ == '__main__':
     if len(max_size) != 2:
         parser.error("Wrong --max-size: must specify in the form WIDTHxHEIGHT (ej: 800x800)")
 
-    do_garnish(args.src_file, args.dst_file,
+    exit_status = do_garnish(args.src_file, args.dst_file,
         author=args.author,
         overwrite=args.overwrite,
         font_file=args.font,
@@ -316,3 +326,5 @@ if __name__ == '__main__':
         title=args.title,
         year=args.year,
     )
+
+    sys.exit(exit_status)
