@@ -27,6 +27,6 @@ class BasicTest(unittest.TestCase):
         _, filename = tempfile.mkstemp(".jpg", "_gmp_test_")
         garnish.do_garnish(self.test_image_01_filename, filename,
             author='John Doe <jd@example.com>',
-            overwrite=True)
+            overwrite=True, year=2000)
         # ls -1rt /tmp/_gmp_test_*.jpg | tail -n 1 | xargs kde-open
         print "Generated OK - Output file {0}".format(filename)

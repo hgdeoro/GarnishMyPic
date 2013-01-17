@@ -25,7 +25,7 @@ DEFAULT_FONT = '/usr/share/fonts/truetype/droid/DroidSans-Bold.ttf'
 DEFAULT_FONT_SIZE = 12
 DEFAULT_OUTPUT_QUALITY = int(os.environ.get('OUTPUT_QUALITY', '95'))
 DEFAULT_BORDER = int(os.environ.get('BORDER', '4'))
-DEFAULT_MAX_SIZE = (800, 800, )
+DEFAULT_MAX_SIZE = (800, 800,)
 
 #
 # How to get exiv information:
@@ -114,9 +114,12 @@ def copy_exif_info(src_filename, dst_filename):
 def do_garnish(src_filename, dst_filename, author=None, overwrite=False,
     font_file=DEFAULT_FONT, font_size=DEFAULT_FONT_SIZE,
     output_quality=DEFAULT_OUTPUT_QUALITY, border_size=DEFAULT_BORDER,
-    max_size=DEFAULT_MAX_SIZE):
+    max_size=DEFAULT_MAX_SIZE, title=None, year=None):
     # TODO: check input file is JPEG
     # TODO: check output file extension is JPEG
+
+    assert author is not None
+    assert year is not None
 
     THUMB_SIZE = (max_size[0] - (border_size * 4), max_size[1] - (border_size * 4))
 
@@ -132,9 +135,6 @@ def do_garnish(src_filename, dst_filename, author=None, overwrite=False,
         if os.path.exists(dst_filename):
             logger.error("The output file '%s' already exists", dst_filename)
             sys.exit(1)
-
-    title = os.environ.get('TITLE', None)
-    year = os.environ.get('YEAR', datetime.date.today().year)
 
     exif_info = get_exif_info(src_filename)
 
@@ -160,10 +160,6 @@ def do_garnish(src_filename, dst_filename, author=None, overwrite=False,
     pos = from_left
 
     draw = ImageDraw.Draw(garnished)
-
-    #    text = u"'{title}' ©{year} {author} - ISO: {iso} - Aperture: F/{aperture} - Shutter speed: {shutter}".format(
-    #        title=title, year=year, author=author, iso=iso, aperture=aperture, shutter=shutter)
-    #    draw.text([from_left, from_top], text, fill=ImageColor.getcolor('black', src_image.mode), font=font)
 
     if title:
         text = u"'{0}' ".format(title) # WITH trailing space!
@@ -236,6 +232,9 @@ if __name__ == '__main__':
     parser.add_argument("dst_file", help="Path where to create the thumbnail")
     parser.add_argument("--author", help="Author information (this script also checks "
         "for the GMP_AUTHOR environment variable", default=GMP_AUTHOR)
+    parser.add_argument("--title", help="Title of the pic")
+    parser.add_argument("--year", help="Year to use on copyright (defaults to current year)",
+        default=datetime.date.today().year)
     parser.add_argument("--overwrite", help="Overwrite dst_file if exists",
         action='store_true')
     parser.add_argument("--output-quality", help="Quality of generated JPG (1-100)",
@@ -269,4 +268,6 @@ if __name__ == '__main__':
         output_quality=args.output_quality,
         border_size=args.border_size,
         max_size=max_size,
+        title=args.title,
+        year=args.year,
     )
