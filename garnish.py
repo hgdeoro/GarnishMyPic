@@ -14,15 +14,14 @@ import subprocess
 from PIL import Image, ImageColor, ImageDraw, ImageFont, ImageOps
 
 
-# TODO: remove all these env. variables and use program arguments
 # TODO: use system font or add font file - check license!
-SIZE = (800, 800,)
-OUTPUT_QUALITY = int(os.environ.get('OUTPUT_QUALITY', '95'))
-BORDER = int(os.environ.get('BORDER', '4'))
 
 # Defaults
 DEFAULT_FONT = '/usr/share/fonts/truetype/droid/DroidSans-Bold.ttf'
 DEFAULT_FONT_SIZE = 12
+DEFAULT_OUTPUT_QUALITY = int(os.environ.get('OUTPUT_QUALITY', '95'))
+DEFAULT_BORDER = int(os.environ.get('BORDER', '4'))
+DEFAULT_MAX_SIZE = (800, 800, )
 
 #
 # How to get exiv information:
@@ -108,11 +107,14 @@ def copy_exif_info(src_filename, dst_filename):
     )
 
 
-def do_garnish(src_filename, dst_filename, author=None, overwrite=False, font_file=None, font_size=None):
+def do_garnish(src_filename, dst_filename, author=None, overwrite=False,
+    font_file=DEFAULT_FONT, font_size=DEFAULT_FONT_SIZE,
+    output_quality=DEFAULT_OUTPUT_QUALITY, border_size=DEFAULT_BORDER,
+    max_size=DEFAULT_MAX_SIZE):
     # TODO: check input file is JPEG
     # TODO: check output file extension is JPEG
 
-    THUMB_SIZE = (SIZE[0] - (BORDER * 4), SIZE[1] - (BORDER * 4))
+    THUMB_SIZE = (max_size[0] - (border_size * 4), max_size[1] - (border_size * 4))
 
     # TODO: enhance error message
     assert os.path.exists(src_filename), \
@@ -130,21 +132,21 @@ def do_garnish(src_filename, dst_filename, author=None, overwrite=False, font_fi
     src_image = Image.open(src_filename)
     src_image.thumbnail(THUMB_SIZE, Image.ANTIALIAS)
 
-    src_image = ImageOps.expand(src_image, border=4, fill='black')
-    src_image = ImageOps.expand(src_image, border=4, fill='white')
+    src_image = ImageOps.expand(src_image, border=border_size, fill='black')
+    src_image = ImageOps.expand(src_image, border=border_size, fill='white')
 
     # TODO: check math for non-default thumb size
     w = src_image.size[0]
-    h = src_image.size[1] + 18 - BORDER
+    h = src_image.size[1] + 18 - border_size
 
-    font = ImageFont.truetype(font_file or DEFAULT_FONT, font_size or DEFAULT_FONT_SIZE)
+    font = ImageFont.truetype(font_file, font_size)
 
     garnished = Image.new(src_image.mode, [w, h], ImageColor.getcolor('white', src_image.mode))
     garnished.paste(src_image, (0, 0))
 
     # TODO: check math for non-default thumb size
     from_left = 6
-    from_top = src_image.size[1] + 1 - BORDER
+    from_top = src_image.size[1] + 1 - border_size
 
     pos = from_left
 
@@ -198,7 +200,7 @@ def do_garnish(src_filename, dst_filename, author=None, overwrite=False, font_fi
 
     del draw
 
-    garnished.save(dst_filename, quality=OUTPUT_QUALITY, format='JPEG')
+    garnished.save(dst_filename, quality=output_quality, format='JPEG')
 
     if pos >= w:
         raise(Exception("Image was saved OK, but text exceeded image width."))
@@ -221,20 +223,37 @@ if __name__ == '__main__':
     parser.add_argument("src_file", help="Path to the original photography")
     parser.add_argument("dst_file", help="Path where to create the thumbnail")
     parser.add_argument("--author", help="Author information")
+    parser.add_argument("--overwrite", help="Overwrite dst_file if exists",
+        action='store_true')
+    parser.add_argument("--output-quality", help="Quality of generated JPG (1-100)",
+        type=int, default=DEFAULT_OUTPUT_QUALITY)
+    parser.add_argument("--border-size", help="Border size in pixels",
+        type=int, default=DEFAULT_BORDER)
     parser.add_argument("--font", help="Path to the TrueType font to use",
         default=DEFAULT_FONT)
     parser.add_argument("--font-size", help="Size of text",
         type=int, default=DEFAULT_FONT_SIZE)
-    parser.add_argument("--overwrite", help="Overwrite dst_file if exists",
-        action='store_true')
+    parser.add_argument("--max-size", help="Max size of output image")
     args = parser.parse_args()
 
     if not args.author and not os.environ.get('GMP_AUTHOR'):
         parser.error("You must specify 'GMP_AUTHOR' environment variable, "
             "or the --author argument")
 
+    # TODO: check proper conversion of these int()s and show error message on error
+    if args.max_size is not None:
+        max_size = [int(size) for size in args.max_size.split('x')]
+        if len(max_size) != 2:
+            parser.error("Wrong --max-size: must specify in the form WIDTHxHEIGHT")
+    else:
+        max_size = DEFAULT_MAX_SIZE
+
     do_garnish(args.src_file, args.dst_file,
         author=args.author,
         overwrite=args.overwrite,
         font_file=args.font,
-        font_size=args.font_size)
+        font_size=args.font_size,
+        output_quality=args.output_quality,
+        border_size=args.border_size,
+        max_size=max_size,
+    )
