@@ -9,6 +9,7 @@ import tempfile
 import unittest
 
 from gmp import garnish
+from gmp.garnish import _exiftool_get_json
 
 
 class BasicTest(unittest.TestCase):
@@ -17,6 +18,11 @@ class BasicTest(unittest.TestCase):
         this_dir = os.path.dirname(os.path.abspath(__file__))
         self.test_image_01_filename = os.path.join(this_dir, 'test-image-01.jpg')
         assert os.path.exists(self.test_image_01_filename)
+
+    def test_exiftool_get_json(self):
+        json_data = _exiftool_get_json(self.test_image_01_filename)
+        self.assertTrue('Model' in json_data[0])
+        self.assertTrue('Make' in json_data[0])
 
     def test_with_test_image_01(self):
         _, filename = tempfile.mkstemp(".jpg", "_gmp_test_")

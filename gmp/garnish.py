@@ -60,16 +60,22 @@ TRY4SHUTTER = ('ShutterSpeed', 'ExposureTime',)
 TRY4ISO = ('ISO', 'ISOSetting', 'ISO2',)
 
 
-def _try_on_dict(exif_dict, key_list):
+def _try_on_dict(exif_dicts, key_list):
     for k in key_list:
-        if k in exif_dict:
-            return exif_dict[k]
+        for a_dict in exif_dicts:
+            if k in a_dict:
+                return a_dict[k]
     return None
 
 
-def _get_exif_info_exiftool(filename):
+def _exiftool_get_json(filename):
     json_output = subprocess.check_output(['exiftool', '-j', filename])
     exif_data = json.loads(json_output)
+    return exif_data
+
+
+def _get_exif_info_exiftool(filename):
+    exif_data = _exiftool_get_json(filename)
     return ExifInfo(filename,
         _try_on_dict(exif_data, TRY4ISO),
         _try_on_dict(exif_data, TRY4APERTURE),
