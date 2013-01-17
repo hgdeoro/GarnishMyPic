@@ -10,6 +10,8 @@ import datetime
 import os
 
 from PIL import Image, ImageColor, ImageDraw, ImageFont, ImageOps
+import subprocess
+import json
 
 # TODO: remove all these env. variables and use program arguments
 # TODO: use system font or add font file - check license!
@@ -44,12 +46,40 @@ class ExifInfo(object):
         self.camera = os.environ.get('CAMERA', camera)
 
 
-def get_exif_info(filename):
+def _get_exif_info_pyexif(filename):
     import pyexif
     editor = pyexif.ExifEditor(filename)
     # TODO: check if this tags works with different cameras
     return ExifInfo(filename, editor.getTag('ISOSetting'), editor.getTag('Aperture'),
         editor.getTag('ShutterSpeed'), None)
+
+
+TRY4CAMERA = ('Model', 'Make',)
+TRY4APERTURE = ('Aperture', 'FNumber',)
+TRY4SHUTTER = ('ShutterSpeed', 'ExposureTime',)
+TRY4ISO = ('ISO', 'ISOSetting', 'ISO2',)
+
+
+def _try_on_dict(exif_dict, key_list):
+    for k in key_list:
+        if k in exif_dict:
+            return exif_dict[k]
+    return None
+
+
+def _get_exif_info_exiftool(filename):
+    json_output = subprocess.check_output(['exiftool', '-j', filename])
+    exif_data = json.loads(json_output)
+    return ExifInfo(filename,
+        _try_on_dict(exif_data, TRY4ISO),
+        _try_on_dict(exif_data, TRY4APERTURE),
+        _try_on_dict(exif_data, TRY4SHUTTER),
+        _try_on_dict(exif_data, TRY4CAMERA),
+    )
+
+
+def get_exif_info(filename):
+    return _get_exif_info_exiftool(filename)
 
 
 def do_garnish(src_filename, dst_filename):
@@ -167,3 +197,206 @@ if __name__ == '__main__':
     src_filename = sys.argv[1]
     dst_filename = sys.argv[2]
     do_garnish(src_filename, dst_filename)
+
+
+#===============================================================================
+# Full list of tags (reported by 'exiftool -s -u FILE.JPG | cut -d : -f 1| sort ') of a Nikon D3100
+#===============================================================================
+#    ActiveD-Lighting
+#    AFAperture
+#    AFAreaMode
+#    AFInfo2Version
+#    AFPointsUsed
+#    Aperture
+#    AutoDistortionControl
+#    AutoFocus
+#    BitsPerSample
+#    BlueBalance
+#    Brightness
+#    CFAPattern
+#    CircleOfConfusion
+#    ColorBalanceUnknown
+#    ColorComponents
+#    ColorSpace
+#    ComponentsConfiguration
+#    CompressedBitsPerPixel
+#    Compression
+#    Contrast
+#    ContrastDetectAF
+#    ContrastDetectAFInFocus
+#    CreateDate
+#    CreatorTool
+#    CropHiSpeed
+#    CurrentIPTCDigest
+#    CustomRendered
+#    DateDisplayFormat
+#    DateTimeOriginal
+#    DaylightSavings
+#    DigitalZoomRatio
+#    Directory
+#    DirectoryNumber
+#    DistortionVersion
+#    DOF
+#    EffectiveMaxAperture
+#    EncodingProcess
+#    ExifByteOrder
+#    ExifImageHeight
+#    ExifImageWidth
+#    ExifToolVersion
+#    ExifVersion
+#    ExitPupilPosition
+#    ExposureBracketValue
+#    ExposureCompensation
+#    ExposureDifference
+#    ExposureMode
+#    ExposureProgram
+#    ExposureTime
+#    ExposureTuning
+#    ExternalFlashExposureComp
+#    ExternalFlashFirmware
+#    ExternalFlashFlags
+#    FileInfoVersion
+#    FileModifyDate
+#    FileName
+#    FileNumber
+#    FilePermissions
+#    FileSize
+#    FileSource
+#    FileType
+#    FilterEffect
+#    FirmwareVersion
+#    Flash
+#    FlashColorFilter
+#    FlashCommanderMode
+#    FlashCompensation
+#    FlashControlMode
+#    FlashExposureBracketValue
+#    FlashExposureComp
+#    FlashGNDistance
+#    FlashGroupACompensation
+#    FlashGroupAControlMode
+#    FlashGroupBCompensation
+#    FlashGroupBControlMode
+#    FlashGroupCCompensation
+#    FlashGroupCControlMode
+#    FlashInfoVersion
+#    FlashMode
+#    FlashpixVersion
+#    FlashSetting
+#    FlashSource
+#    FlashType
+#    FNumber
+#    FocalLength
+#    FocalLength35efl
+#    FocalLengthIn35mmFormat
+#    FocusDistance
+#    FocusMode
+#    FocusPosition
+#    FOV
+#    GainControl
+#    GPSVersionID
+#    HighISONoiseReduction
+#    HueAdjustment
+#    HyperfocalDistance
+#    ImageBoundary
+#    ImageDataSize
+#    ImageHeight
+#    ImageSize
+#    ImageWidth
+#    InteropIndex
+#    InteropVersion
+#    ISO
+#    ISO2
+#    ISOExpansion
+#    ISOExpansion2
+#    ISOSetting
+#    Lens
+#    LensDataVersion
+#    LensFStops
+#    LensID
+#    LensIDNumber
+#    LensSpec
+#    LensType
+#    LightSource
+#    LightValue
+#    Make
+#    MakerNoteVersion
+#    MaxApertureAtMaxFocal
+#    MaxApertureAtMinFocal
+#    MaxApertureValue
+#    MaxFocalLength
+#    MCUVersion
+#    MeteringMode
+#    MIMEType
+#    MinFocalLength
+#    Model
+#    ModifyDate
+#    MultiExposureAutoGain
+#    MultiExposureMode
+#    MultiExposureShots
+#    MultiExposureVersion
+#    Nikon_0x002d
+#    Nikon_0x008a
+#    Nikon_0x009d
+#    Nikon_0x00a3
+#    Nikon_0x00bb
+#    NoiseReduction
+#    Orientation
+#    OriginatingProgram
+#    PhaseDetectAF
+#    PictureControlAdjust
+#    PictureControlBase
+#    PictureControlName
+#    PictureControlQuickAdjust
+#    PictureControlVersion
+#    PowerUpTime
+#    PreviewImage
+#    PreviewImageLength
+#    PreviewImageStart
+#    PrimaryAFPoint
+#    ProcessingSoftware
+#    ProgramShift
+#    ProgramVersion
+#    Quality
+#    RedBalance
+#    ResolutionUnit
+#    RetouchHistory
+#    Saturation
+#    ScaleFactor35efl
+#    SceneCaptureType
+#    SceneType
+#    SensingMethod
+#    SerialNumber
+#    Sharpness
+#    ShootingMode
+#    ShotInfoVersion
+#    ShutterCount
+#    ShutterSpeed
+#    Software
+#    SubjectDistanceRange
+#    SubSecCreateDate
+#    SubSecDateTimeOriginal
+#    SubSecModifyDate
+#    SubSecTime
+#    SubSecTimeDigitized
+#    SubSecTimeOriginal
+#    ThumbnailImage
+#    ThumbnailLength
+#    ThumbnailOffset
+#    Timezone
+#    ToningEffect
+#    ToningSaturation
+#    UnknownInfoVersion
+#    UserComment
+#    VariProgram
+#    VibrationReduction
+#    VRInfoVersion
+#    WB_RBLevels
+#    WhiteBalance
+#    WhiteBalanceFineTune
+#    XMPToolkit
+#    XResolution
+#    YCbCrPositioning
+#    YCbCrSubSampling
+#    YResolution
+#===============================================================================
