@@ -47,7 +47,7 @@ class BasicTest(unittest.TestCase):
             author='John Doe <jd@example.com>',
             overwrite=True,
             year=2000,
-            font_file='/usr/share/fonts/truetype/droid/DroidSans-Bold.ttf',
+            font_file=garnish._get_default_font(),
             font_size=12,
             output_quality=90,
             border_size=4,

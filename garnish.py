@@ -236,6 +236,14 @@ def do_garnish(src_filename, dst_filename, author=None, overwrite=False,
 
     return 0
 
+
+def _get_default_font():
+    this_dir = os.path.dirname(os.path.abspath(__file__))
+    default_font = os.path.join(this_dir, 'LiberationSans-Regular.ttf')
+    assert os.path.exists(default_font)
+    return default_font
+
+
 if __name__ == '__main__':
     import argparse
 
@@ -268,10 +276,10 @@ if __name__ == '__main__':
         GMP_FONT = int(os.environ['GMP_DEFAULT_FONT'])
     except KeyError:
         # TODO: log warn message
-        GMP_FONT = '/usr/share/fonts/truetype/droid/DroidSans-Bold.ttf'
+        GMP_FONT = _get_default_font()
     except ValueError:
         # TODO: log warn message
-        GMP_FONT = '/usr/share/fonts/truetype/droid/DroidSans-Bold.ttf'
+        GMP_FONT = _get_default_font()
 
     try:
         GMP_FONT_SIZE = int(os.environ['GMP_DEFAULT_FONT_SIZE'])
