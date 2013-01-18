@@ -29,7 +29,7 @@ class BasicTest(unittest.TestCase):
 
     def setUp(self):
         this_dir = os.path.dirname(os.path.abspath(__file__))
-        self.test_image_01_filename = os.path.join(this_dir, 'test-image-01.jpg')
+        self.test_image_01_filename = os.path.join(this_dir, 'original.jpg')
         assert os.path.exists(self.test_image_01_filename)
 
     def test_exiftool_get_json(self):
