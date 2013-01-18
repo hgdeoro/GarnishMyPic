@@ -25,10 +25,43 @@ You can download a [ZIP file](https://github.com/hgdeoro/GarnishMyPic/archive/ma
 Or simply donwload:
 
 - the [Python script](https://raw.github.com/hgdeoro/GarnishMyPic/master/garnish.py) with `wget https://raw.github.com/hgdeoro/GarnishMyPic/master/garnish.py`
-- the [font](https://github.com/hgdeoro/GarnishMyPic/blob/master/LiberationSans-Regular.ttf?raw=true) with `wget https://github.com/hgdeoro/GarnishMyPic/blob/master/LiberationSans-Regular.ttf?raw=true`
+- the [font](https://github.com/hgdeoro/GarnishMyPic/blob/master/LiberationSans-Regular.ttf?raw=true) with `wget 'https://github.com/hgdeoro/GarnishMyPic/blob/master/LiberationSans-Regular.ttf?raw=true'`
 
 You don't realy need to download the font, since you could use any TrueType font,
-like **/usr/share/fonts/truetype/ubuntu-font-family/Ubuntu-R.ttf**.
+like **/usr/share/fonts/truetype/ubuntu-font-family/Ubuntu-R.ttf**, and reference it from the command line.
+
+    python garnish.py (...) --font /usr/share/fonts/truetype/ubuntu-font-family/Ubuntu-R.ttf
+
+
+Usage
+-------------------
+
+    usage: garnish.py [-h] [--author AUTHOR] [--title TITLE] [--year YEAR]
+                  [--overwrite] [--output-quality OUTPUT_QUALITY]
+                  [--border-size BORDER_SIZE] [--font FONT]
+                  [--font-size FONT_SIZE] [--max-size MAX_SIZE] [--basic-info]
+                  src_file dst_file
+
+    positional arguments:
+      src_file              Path to the original photography
+      dst_file              Path where to create the thumbnail
+
+    optional arguments:
+      -h, --help            show this help message and exit
+      --author AUTHOR       Author information (this script also checks for the
+                            GMP_AUTHOR environment variable
+      --title TITLE         Title of the pic
+      --year YEAR           Year to use on copyright (defaults to current year)
+      --overwrite           Overwrite dst_file if exists
+      --output-quality OUTPUT_QUALITY
+                            Quality of generated JPG (1-100)
+      --border-size BORDER_SIZE
+                            Border size in pixels
+      --font FONT           Path to the TrueType font to use
+      --font-size FONT_SIZE
+                            Size of text
+      --max-size MAX_SIZE   Max size of output image
+      --basic-info          Doesn't include technical info (iso, F, exposure)
 
 
 Example
