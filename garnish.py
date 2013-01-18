@@ -109,9 +109,8 @@ def copy_exif_info(src_filename, dst_filename):
 
 
 def do_garnish(src_filename, dst_filename, author=None, overwrite=False,
-    font_file=None, font_size=None,
-    output_quality=None, border_size=None,
-    max_size=None, title=None, year=None):
+    font_file=None, font_size=None, output_quality=None, border_size=None,
+    max_size=None, title=None, year=None, basic_info=None):
     """
     Process the pic and garnish it. Returns the 'exit status'.
     """
@@ -126,6 +125,7 @@ def do_garnish(src_filename, dst_filename, author=None, overwrite=False,
     assert border_size is not None
     assert max_size is not None
     assert year is not None
+    assert basic_info is not None
 
     THUMB_SIZE = (max_size[0] - (border_size * 4), max_size[1] - (border_size * 4))
 
@@ -196,33 +196,34 @@ def do_garnish(src_filename, dst_filename, author=None, overwrite=False,
     text_width = draw.textsize(text, font=font)[0]
     pos = pos + text_width
 
-    if exif_info.camera:
-        text = "- Camera: {0} ".format(exif_info.camera)
-        draw.text([pos, from_top], text,
-            fill=ImageColor.getcolor('black', src_image.mode), font=font)
-        text_width = draw.textsize(text, font=font)[0]
-        pos = pos + text_width
-
-    if exif_info.iso:
-        text = "- ISO: {0} ".format(exif_info.iso)
-        draw.text([pos, from_top], text,
-            fill=ImageColor.getcolor('black', src_image.mode), font=font)
-        text_width = draw.textsize(text, font=font)[0]
-        pos = pos + text_width
-
-    if exif_info.aperture:
-        text = "- Aperture: F/{0} ".format(exif_info.aperture)
-        draw.text([pos, from_top], text,
-            fill=ImageColor.getcolor('black', src_image.mode), font=font)
-        text_width = draw.textsize(text, font=font)[0]
-        pos = pos + text_width
-
-    if exif_info.shutter:
-        text = "- Shutter speed: {0} ".format(exif_info.shutter)
-        draw.text([pos, from_top], text,
-            fill=ImageColor.getcolor('black', src_image.mode), font=font)
-        text_width = draw.textsize(text, font=font)[0]
-        pos = pos + text_width
+    if basic_info is False:
+        if exif_info.camera:
+            text = "- Camera: {0} ".format(exif_info.camera)
+            draw.text([pos, from_top], text,
+                fill=ImageColor.getcolor('black', src_image.mode), font=font)
+            text_width = draw.textsize(text, font=font)[0]
+            pos = pos + text_width
+    
+        if exif_info.iso:
+            text = "- ISO: {0} ".format(exif_info.iso)
+            draw.text([pos, from_top], text,
+                fill=ImageColor.getcolor('black', src_image.mode), font=font)
+            text_width = draw.textsize(text, font=font)[0]
+            pos = pos + text_width
+    
+        if exif_info.aperture:
+            text = "- Aperture: F/{0} ".format(exif_info.aperture)
+            draw.text([pos, from_top], text,
+                fill=ImageColor.getcolor('black', src_image.mode), font=font)
+            text_width = draw.textsize(text, font=font)[0]
+            pos = pos + text_width
+    
+        if exif_info.shutter:
+            text = "- Shutter speed: {0} ".format(exif_info.shutter)
+            draw.text([pos, from_top], text,
+                fill=ImageColor.getcolor('black', src_image.mode), font=font)
+            text_width = draw.textsize(text, font=font)[0]
+            pos = pos + text_width
 
     del draw
 
@@ -310,6 +311,8 @@ if __name__ == '__main__':
         type=int, default=GMP_FONT_SIZE)
     parser.add_argument("--max-size", help="Max size of output image",
         default=GMP_MAX_SIZE)
+    parser.add_argument("--basic-info", help="Doesn't include technical info (iso, F, exposure)",
+        action='store_true')
     args = parser.parse_args()
 
     if not args.author:
@@ -337,6 +340,7 @@ if __name__ == '__main__':
         max_size=max_size,
         title=args.title,
         year=args.year,
+        basic_info=args.basic_info
     )
 
     sys.exit(exit_status)

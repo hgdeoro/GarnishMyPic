@@ -52,10 +52,17 @@ class BasicTest(unittest.TestCase):
             output_quality=90,
             border_size=4,
             max_size=(800, 800,),
+            basic_info=False,
         )
 
         # First, check if works
         exit_status = garnish.do_garnish(self.test_image_01_filename, filename, **kwargs)
+        self.assertEqual(exit_status, 0)
+
+        # Check if works with basic_info
+        kwargs2 = dict(kwargs)
+        kwargs2['basic_info'] = True
+        exit_status = garnish.do_garnish(self.test_image_01_filename, filename, **kwargs2)
         self.assertEqual(exit_status, 0)
 
         # Check if fails when overwrite is false and file exists
