@@ -3,10 +3,20 @@ Garnish my pic
 
 Creates a thumbnail of your photo, add a border and put the folowing texts at the bottom:
 
-- title (if specified) - from command line
-- year - from command line
-- author -from command line or environment variable
-- camera model, iso setting, aperture (f number) and exposure time (shutter speed) - from EXIF information
+- title (if specified) - from command line `--title`
+- year - from command line `--year`
+- author - from command line or environment variable `--author`
+- camera model, iso setting, aperture (f number) and exposure time (shutter speed) are read from EXIF information of the original picture (also, the
+values of those exif tags are copied to the newly generated picture, but ONLY **those** tags, other tags are NOT copied).
+
+There are more options:
+
+- overwrite destination file: `--overwrite`
+- quality of the generated file (100 for better quality): `--output-quality`
+- border size: `--border-size`
+- font and font size: `--font` and `--font-size`
+- maximum image resolution: `--max-size`
+- only include basic information (title, year and author): `--basic-info`
 
 
 Requeriments
