@@ -82,6 +82,8 @@ CAMERA_ICON = '\xff\xd8\xff\xe0\x00\x10JFIF\x00\x01\x01\x01\x01,\x01,\x00\x00\xf
     '\x01?\x10a\xee+\xc3\xce]3d\xbc\x7f\x8d\xcbP\xa7Y\x9d\xe8\x12X\xd9\x92uddk\xc4\x9fj%' + \
     '\xda\xc5p\xb8\xff\xd9'
 
+PROPAGANDA = None # PROPAGANDA = "http://goo.gl/K0tWH"
+
 #
 # Different ways to get exiv information:
 #
@@ -290,12 +292,20 @@ def do_garnish(src_filename, dst_filename, author=None, overwrite=False,
             pos = pos + text_width
             separator = ' - '
 
+    if pos >= w:
+        logger.warn("Text exceeded image width")
+    else:
+        if PROPAGANDA:
+            text = PROPAGANDA
+            text_width = draw.textsize(text, font=font)[0]
+            if (pos + 20 + text_width) < w:
+                # put at the right of the image
+                draw.text([(w - text_width - 4), from_top], text,
+                    fill=ImageColor.getcolor('#777', src_image.mode), font=font)
+
     del draw
 
     garnished.save(dst_filename, quality=output_quality, format='JPEG')
-
-    if pos >= w:
-        logger.warn("Image was saved OK, but text exceeded image width")
 
     copy_exif_info(src_filename, dst_filename)
 
