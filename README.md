@@ -11,9 +11,9 @@ Creates a thumbnail of your photo, add a border and put the folowing texts at th
 Example
 -------------------
 
-    python garnish.py --author "Jonh Doe <jd@example.com>" --title "Tree, tree, tree" original.jpg thumb.jpg
+    python garnish.py --author "Jonh Doe" --title "Tree" --max-size 600x600 original.jpg thumb.jpg
 
-Will convert:
+Will convert the original file:
 
 ![Original image](https://raw.github.com/hgdeoro/GarnishMyPic/master/test/original.jpg)
 

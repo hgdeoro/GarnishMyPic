@@ -1,2 +1,3 @@
 /virtualenv
 *.pyc
+/test/thumb.jpg_original

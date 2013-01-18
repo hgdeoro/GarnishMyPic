@@ -155,7 +155,7 @@ def do_garnish(src_filename, dst_filename, author=None, overwrite=False,
     # Create the thumb and add the border
     src_image.thumbnail(THUMB_SIZE, Image.ANTIALIAS)
     src_image = ImageOps.expand(src_image, border=border_size, fill='black')
-    src_image = ImageOps.expand(src_image, border=border_size, fill='white')
+    src_image = ImageOps.expand(src_image, border=border_size, fill='#eee')
 
     # TODO: check math for non-default thumb size
     w = src_image.size[0]
