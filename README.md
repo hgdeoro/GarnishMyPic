@@ -8,6 +8,29 @@ Creates a thumbnail of your photo, add a border and put the folowing texts at th
 - author -from command line or environment variable
 - camera model, iso setting, aperture (f number) and exposure time (shutter speed) - from EXIF information
 
+
+Requeriments
+-------------------
+
+- Python 2.7
+- exiftool (to install on Ubuntu, run `sudo apt-get install libimage-exiftool-perl`)
+- PIL (to install on Ubuntu, run `sudo apt-get install python-imaging`)
+
+
+Install
+-------------------
+
+You can download a [ZIP file](https://github.com/hgdeoro/GarnishMyPic/archive/master.zip).
+
+Or simply donwload:
+
+- the [Python script](https://raw.github.com/hgdeoro/GarnishMyPic/master/garnish.py) with `wget https://raw.github.com/hgdeoro/GarnishMyPic/master/garnish.py`
+- the [font](https://github.com/hgdeoro/GarnishMyPic/blob/master/LiberationSans-Regular.ttf?raw=true) with `wget https://github.com/hgdeoro/GarnishMyPic/blob/master/LiberationSans-Regular.ttf?raw=true`
+
+You don't realy need to download the font, since you could use any TrueType font,
+like **/usr/share/fonts/truetype/ubuntu-font-family/Ubuntu-R.ttf**.
+
+
 Example
 -------------------
 
