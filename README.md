@@ -15,9 +15,9 @@ Example
 
 Will convert:
 
-![Original image](test/original.jpg)
+![Original image](https://raw.github.com/hgdeoro/GarnishMyPic/master/test/original.jpg)
 
 into:
 
-![Thumb with info](test/thumb.jpg)
+![Thumb with info](https://raw.github.com/hgdeoro/GarnishMyPic/master/test/thumb.jpg)
 
