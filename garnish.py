@@ -53,8 +53,9 @@ PROPAGANDA = None  # PROPAGANDA = "http://goo.gl/K0tWH"
 
 
 def do_garnish(src_filename, dst_filename, author,
-    font_file, font_size, output_quality, border_size, border_color,
-    max_size, year, basic_info, title=None, overwrite=False):
+    font_file, font_size, output_quality, border_size, border_size_bottom, border_color,
+    max_size, year, basic_info, title=None,
+    title_img=None, overwrite=False):
     """
     Process the pic and garnish it. Returns the 'exit status'.
     """
@@ -62,7 +63,10 @@ def do_garnish(src_filename, dst_filename, author,
     # TODO: check input file is JPEG
     # TODO: check output file extension is JPEG
 
+    #===========================================================================
+    # Check if src/dst exists
     # TODO: enhance error message
+    #===========================================================================
     if not os.path.exists(src_filename):
         logger.error("The input file '%s' does not exists", src_filename)
         return 1
@@ -75,7 +79,9 @@ def do_garnish(src_filename, dst_filename, author,
             logger.error("The output file '%s' already exists", dst_filename)
             return 1
 
-    # Open the image
+    #===========================================================================
+    # Open things: src image, title image, font
+    #===========================================================================
     try:
         src_image = Image.open(src_filename)
     except:
@@ -83,20 +89,18 @@ def do_garnish(src_filename, dst_filename, author,
             src_filename)
         return 1
 
-    # Get the exif info
-    exif_info = get_exif_info(src_filename)
+    # Open the 'title image'
+    if title_img:
+        try:
+            title_img_image = Image.open(title_img)
+        except:
+            logger.error("Couldn't load an image from file %s. Check if it's realy an image",
+                title_img)
+            return 1
+    else:
+        title_img_image = None
 
-    # Create the thumb...
-    src_image.thumbnail(max_size, Image.ANTIALIAS)
-
-    # Add the border -> left, top, right, bottom
-    real_border_size = (border_size, border_size, border_size, border_size + 32)
-    src_image = ImageOps.expand(src_image, border=real_border_size, fill=border_color)
-
-    # TODO: check math for non-default thumb size
-    w = src_image.size[0]
-    h = src_image.size[1] + 20 - border_size
-
+    # Font
     try:
         font = ImageFont.truetype(font_file, font_size)
     except:
@@ -107,13 +111,37 @@ def do_garnish(src_filename, dst_filename, author,
             logger.error("The specified font file doens't exists: %s", font_file)
             return 1
 
-    garnished = Image.new(src_image.mode, [w, h], ImageColor.getcolor('white', src_image.mode))
-    garnished.paste(src_image, (0, 0))
+    #===========================================================================
+    # Get exif
+    #===========================================================================
+    exif_info = get_exif_info(src_filename)
+
+    #===========================================================================
+    # Create the thumb...
+    #===========================================================================
+    src_image.thumbnail(max_size, Image.ANTIALIAS)
+
+    #===========================================================================
+    # Add the border -> left, top, right, bottom
+    #===========================================================================
+    real_border_size = (border_size, border_size, border_size, border_size + border_size_bottom)
+    src_image = ImageOps.expand(src_image, border=real_border_size, fill=border_color)
+
+    ####    # TODO: check math for non-default thumb size
+    ####    w = src_image.size[0]
+    ####    h = src_image.size[1] + 20 - border_size
+    ####
+    ####    garnished = Image.new(src_image.mode, [w, h],
+    ####        ImageColor.getcolor('white', src_image.mode))
+    ####    garnished.paste(src_image, (0, 0))
+
+    garnished = src_image
 
     # TODO: check math for non-default thumb size
     from_left = 8
-    from_top = src_image.size[1] + 3 - border_size
+    from_top = src_image.size[1] - border_size - border_size_bottom + 4
 
+    # pos start with "from_left", and is incremented while we add contents (img, text)
     pos = from_left
 
     draw = ImageDraw.Draw(garnished)
@@ -124,13 +152,17 @@ def do_garnish(src_filename, dst_filename, author,
             fill=ImageColor.getcolor('black', src_image.mode), font=font)
         text_width = draw.textsize(text, font=font)[0]
         pos = pos + text_width
+    elif title_img_image:
+        # paste(img, pos, mask) // mask -> transparency
+        garnished.paste(title_img_image, (pos, from_top - 0,), title_img_image)
+        pos = pos + title_img_image.size[0] + 4
 
-    # Copyright
-    text = u"©{0} {1} ".format(year, author)  # WITH trailing space!
-    draw.text([pos, from_top], text,
-        fill=ImageColor.getcolor('black', src_image.mode), font=font)
-    text_width = draw.textsize(text, font=font)[0]
-    pos = pos + text_width
+    #    # Copyright
+    #    text = u"©{0} {1} ".format(year, author)  # WITH trailing space!
+    #    draw.text([pos, from_top], text,
+    #        fill=ImageColor.getcolor('black', src_image.mode), font=font)
+    #    text_width = draw.textsize(text, font=font)[0]
+    #    pos = pos + text_width
 
     if basic_info is False and (exif_info.camera or exif_info.iso or \
         exif_info.aperture or exif_info.shutter):
@@ -176,16 +208,16 @@ def do_garnish(src_filename, dst_filename, author,
             pos = pos + text_width
             separator = ' - '
 
-    if pos >= w:
+    if pos >= src_image.size[1]:
         logger.warn("Text exceeded image width")
-    else:
-        if PROPAGANDA:
-            text = PROPAGANDA
-            text_width = draw.textsize(text, font=font)[0]
-            if (pos + 20 + text_width) < w:
-                # put at the right of the image
-                draw.text([(w - text_width - 4), from_top], text,
-                    fill=ImageColor.getcolor('#777', src_image.mode), font=font)
+    #    else:
+    #        if PROPAGANDA:
+    #            text = PROPAGANDA
+    #            text_width = draw.textsize(text, font=font)[0]
+    #            if (pos + 20 + text_width) < w:
+    #                # put at the right of the image
+    #                draw.text([(w - text_width - 4), from_top], text,
+    #                    fill=ImageColor.getcolor('#777', src_image.mode), font=font)
 
     del draw
 
@@ -264,6 +296,7 @@ if __name__ == '__main__':
     parser.add_argument("--author", help="Author information (this script also checks "
         "for the GMP_AUTHOR environment variable", default=GMP_AUTHOR)
     parser.add_argument("--title", help="Title of the pic")
+    parser.add_argument("--title-img", help="Image to use for title at the bottom")
     parser.add_argument("--year", help="Year to use on copyright (defaults to current year)",
         default=datetime.date.today().year)
     parser.add_argument("--overwrite", help="Overwrite dst_file if exists",
@@ -307,8 +340,10 @@ if __name__ == '__main__':
         output_quality=args.output_quality,
         border_size=args.border_size,
         border_color=args.border_color,
+        border_size_bottom=30,
         max_size=max_size,
         title=args.title,
+        title_img=args.title_img,
         year=args.year,
         basic_info=args.basic_info
     )
