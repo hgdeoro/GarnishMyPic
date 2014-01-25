@@ -139,7 +139,7 @@ def do_garnish(src_filename, dst_filename, author,
     garnished = ImageOps.expand(garnished, border=real_border_size, fill=border_color)
 
     # TODO: check math for non-default thumb size
-    from_left = 8
+    from_left = border_size
     from_top = garnished.size[1] - border_size - border_size_bottom + BORDER_SIZE_BOTTOM_MARGIN
 
     # pos start with "from_left", and is incremented while we add contents (img, text)
