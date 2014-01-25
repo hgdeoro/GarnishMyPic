@@ -71,8 +71,7 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     parser.add_argument("src_file", help="Path to the original photography")
-    parser.add_argument("dst_file", help="Path where to create the thumbnail "
-        "(Optional: defaults to desktop)", nargs="?")
+    parser.add_argument("--output_dir", "-d", help="Output directory (default: Desktop)")
     parser.add_argument("--author", help="Author information", default=GMP_AUTHOR)
     parser.add_argument("--exif-copyright", help="Information to set as 'copyright' exif tag",
         default=GMP_EXIF_COPYRIGHT)
@@ -108,23 +107,33 @@ if __name__ == '__main__':
     if len(max_size) != 2:
         parser.error("Wrong --max-size: must specify in the form WIDTHxHEIGHT (ej: 800x800)")
 
+    #===========================================================================
+    # Clean & check input file
+    #===========================================================================
     input_filename_full_path = os.path.normpath(os.path.abspath(args.src_file))
 
     if not os.path.exists(input_filename_full_path):
         parser.error("The input file '%s' does not exists", input_filename_full_path)
 
-    if args.dst_file:
-        dst_file = args.dst_file
+    #===========================================================================
+    # output_dir
+    #===========================================================================
+    if args.output_dir:
+        output_dir = args.output_dir
     else:
-        input_basename = os.path.basename(input_filename_full_path)
-        fn_root, fn_ext = os.path.splitext(input_basename)
+        output_dir = os.path.join(os.path.abspath(os.path.expanduser('~')), "Desktop/")
 
-        desktop = os.path.join(os.path.abspath(os.path.expanduser('~')), "Desktop/")
-        assert os.path.isdir(desktop), "{} is not a directory".format(desktop)
-        output_filename = "{}_garnish{}".format(fn_root, fn_ext)
-        dst_file = os.path.join(desktop, output_filename)
+    assert os.path.isdir(output_dir), "Output directory {} is not a directory".format(output_dir)
 
-    exit_status = do_garnish(args.src_file, dst_file,
+    #===========================================================================
+    # Build output file
+    #===========================================================================
+    input_basename = os.path.basename(input_filename_full_path)
+    fn_root, fn_ext = os.path.splitext(input_basename)
+    output_basename = "{}_garnish{}".format(fn_root, fn_ext)
+    output = os.path.join(output_dir, output_basename)
+
+    exit_status = do_garnish(args.src_file, output,
         author=args.author,
         overwrite=args.overwrite,
         font_file=args.font,
