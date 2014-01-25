@@ -47,6 +47,7 @@ PROPAGANDA = None  # PROPAGANDA = "http://goo.gl/K0tWH"
 BORDER_SIZE_BOTTOM = 20
 BORDER_SIZE_BOTTOM_MARGIN = 5
 FONT_COLOR = '#ccc'
+CAPITALIZE = True
 
 #
 # Different ways to get exiv information:
@@ -202,17 +203,21 @@ def do_garnish(src_filename, dst_filename, author,
             separator = ' - '
 
         if exif_info.iso:
-            text = "ISO {1}{0}".format(separator, exif_info.iso)
+            text = "ISO: {1}{0}".format(separator, exif_info.iso)
             pos_r = rtl(text, pos_r, draw)
             separator = ' - '
 
         if exif_info.shutter:
-            text = "Exp {1}{0}".format(separator, exif_info.shutter)
+            text = "Exp: {1}{0}".format(separator, exif_info.shutter)
             pos_r = rtl(text, pos_r, draw)
             separator = ' - '
 
         if exif_info.camera:
-            text = "{1}{0}".format(separator, exif_info.camera)
+            if CAPITALIZE:
+                camera_name = ' '.join([s.capitalize() for s in exif_info.camera.split()])
+            else:
+                camera_name = exif_info.camera
+            text = "{1}{0}".format(separator, camera_name)
             pos_r = rtl(text, pos_r, draw)
             separator = ' - '
 
