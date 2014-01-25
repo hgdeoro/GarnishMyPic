@@ -30,7 +30,6 @@ import sys
 from PIL import Image, ImageColor, ImageDraw, ImageFont, ImageOps
 
 from gmp.exif import get_exif_info, copy_exif_info
-from gmp.resources import CAMERA_ICON
 from gmp.utils import get_default_font, get_camera_image
 
 
@@ -131,6 +130,11 @@ def do_garnish(src_filename, dst_filename, author,
     # Camera icon
     camera_image = get_camera_image((font_size + 2, font_size + 2, ))
 
+    def rtl(text, rpos, draw):
+        text_width = draw.textsize(text, font=font)[0]
+        draw.text([rpos - text_width, from_top], text, fill=font_color, font=font)
+        return rpos - text_width
+
     #===========================================================================
     # Create the thumb and a copy to work on
     #===========================================================================
@@ -191,35 +195,33 @@ def do_garnish(src_filename, dst_filename, author,
         exif_info.aperture or exif_info.shutter):
 
         separator = ''
-
-        def rtl(text, rpos, draw):
-            text_width = draw.textsize(text, font=font)[0]
-            draw.text([rpos - text_width, from_top], text, fill=font_color, font=font)
-            return rpos - text_width
-
-        if exif_info.aperture:
-            text = "f/{1}{0}".format(separator, exif_info.aperture)
-            pos_r = rtl(text, pos_r, draw)
-            separator = ' - '
-
-        if exif_info.iso:
-            text = "ISO: {1}{0}".format(separator, exif_info.iso)
-            pos_r = rtl(text, pos_r, draw)
-            separator = ' - '
-
-        if exif_info.shutter:
-            text = "Exp: {1}{0}".format(separator, exif_info.shutter)
-            pos_r = rtl(text, pos_r, draw)
-            separator = ' - '
+        tech_text = ''
 
         if exif_info.camera:
             if CAPITALIZE:
                 camera_name = ' '.join([s.capitalize() for s in exif_info.camera.split()])
             else:
                 camera_name = exif_info.camera
-            text = "{1}{0}".format(separator, camera_name)
-            pos_r = rtl(text, pos_r, draw)
+            tech_text += separator
+            tech_text += camera_name
             separator = ' - '
+
+        if exif_info.shutter:
+            tech_text += separator
+            tech_text += "Exp: {0}".format(exif_info.shutter)
+            separator = ' - '
+
+        if exif_info.iso:
+            tech_text += separator
+            tech_text += "ISO: {0}".format(exif_info.iso)
+            separator = ' - '
+
+        if exif_info.aperture:
+            tech_text += separator
+            tech_text += "f/{0}".format(exif_info.aperture)
+            separator = ' - '
+
+        pos_r = rtl(tech_text, pos_r, draw)
 
         # Paste camera icon
         camera_pos = pos_r - camera_image.size[0] - 2
