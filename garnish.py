@@ -164,7 +164,9 @@ def do_garnish(src_filename, dst_filename, author,
         garnished.paste(title_img_image, (pos, from_top - 0,), title_img_image)
         pos = pos + title_img_image.size[0] + 4
 
-    #    # Copyright
+    #===========================================================================
+    # Copyright
+    #===========================================================================
     #    text = u"©{0} {1} ".format(year, author)  # WITH trailing space!
     #    draw.text([pos, from_top], text,
     #        fill=font_color, font=font)
