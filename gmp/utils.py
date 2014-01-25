@@ -38,3 +38,12 @@ def get_camera_image(max_size):
     camera_image = Image.open(camera_icon_filename)
     camera_image.thumbnail(max_size, Image.ANTIALIAS)
     return camera_image
+
+
+def env_get_int(env_name, default):
+    try:
+        return int(os.environ[env_name])
+    except KeyError:
+        return default
+    except ValueError:
+        return default

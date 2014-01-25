@@ -28,7 +28,7 @@ import os
 import sys
 
 from gmp.garnisher import do_garnish, BORDER_SIZE_BOTTOM
-from gmp.utils import get_default_font
+from gmp.utils import get_default_font, env_get_int
 
 
 # TODO: use system font or add font file - check license!
@@ -59,64 +59,21 @@ if __name__ == '__main__':
     #===============================================================================
 
     GMP_AUTHOR = os.environ.get('GMP_AUTHOR', None)
+    GMP_EXIF_COPYRIGHT = os.environ.get('GMP_EXIF_COPYRIGHT', None)
+    GMP_FONT = os.environ.get('GMP_FONT', get_default_font())
+    GMP_DEFAULT_MAX_SIZE = os.environ.get('GMP_DEFAULT_MAX_SIZE', '800x800')
+    GMP_COLOR = os.environ.get('GMP_COLOR', '#545454')
 
-    try:
-        GMP_OUTPUT_QUALITY = int(os.environ['GMP_OUTPUT_QUALITY'])
-    except KeyError:
-        # TODO: log warn message
-        GMP_OUTPUT_QUALITY = 97
-    except ValueError:
-        # TODO: log warn message
-        GMP_OUTPUT_QUALITY = 97
-
-    try:
-        GMP_BORDER = int(os.environ['GMP_DEFAULT_BORDER'])
-    except KeyError:
-        # TODO: log warn message
-        GMP_BORDER = 10
-    except ValueError:
-        # TODO: log warn message
-        GMP_BORDER = 10
-
-    try:
-        GMP_FONT = os.environ['GMP_DEFAULT_FONT']
-    except KeyError:
-        # TODO: log warn message
-        GMP_FONT = get_default_font()
-    except ValueError:
-        # TODO: log warn message
-        GMP_FONT = get_default_font()
-
-    try:
-        GMP_FONT_SIZE = int(os.environ['GMP_DEFAULT_FONT_SIZE'])
-    except KeyError:
-        # TODO: log warn message
-        GMP_FONT_SIZE = 12
-    except ValueError:
-        # TODO: log warn message
-        GMP_FONT_SIZE = 12
-
-    try:
-        GMP_MAX_SIZE = int(os.environ['GMP_DEFAULT_MAX_SIZE'])
-        GMP_MAX_SIZE = '{}x{}'.format(GMP_MAX_SIZE, GMP_MAX_SIZE)
-    except KeyError:
-        # TODO: log warn message
-        GMP_MAX_SIZE = '800x800'
-    except ValueError:
-        # TODO: log warn message
-        GMP_MAX_SIZE = '800x800'
-
-    try:
-        GMP_COLOR = os.environ['GMP_COLOR']
-    except KeyError:
-        # TODO: log warn message
-        GMP_COLOR = '#545454'
+    GMP_OUTPUT_QUALITY = env_get_int('GMP_OUTPUT_QUALITY', 97)
+    GMP_BORDER = env_get_int('GMP_DEFAULT_BORDER', 10)
+    GMP_DEFAULT_FONT_SIZE = env_get_int('GMP_DEFAULT_FONT_SIZE', 12)
 
     parser = argparse.ArgumentParser()
     parser.add_argument("src_file", help="Path to the original photography")
     parser.add_argument("dst_file", help="Path where to create the thumbnail")
-    parser.add_argument("--author", help="Author information (this script also checks "
-        "for the GMP_AUTHOR environment variable", default=GMP_AUTHOR)
+    parser.add_argument("--author", help="Author information", default=GMP_AUTHOR)
+    parser.add_argument("--exif-copyright", help="Information to set as 'copyright' exif tag",
+        default=GMP_EXIF_COPYRIGHT)
     parser.add_argument("--title", help="Title of the pic")
     parser.add_argument("--title-img", help="Image to use for title at the bottom")
     parser.add_argument("--year", help="Year to use on copyright (defaults to current year)",
@@ -128,9 +85,10 @@ if __name__ == '__main__':
         type=int, default=GMP_BORDER)
     parser.add_argument("--border-color", help="Border color", default=GMP_COLOR)
     parser.add_argument("--font", help="Path to the TrueType font to use", default=GMP_FONT)
-    parser.add_argument("--font-size", help="Size of text", type=int, default=GMP_FONT_SIZE)
+    parser.add_argument("--font-size", help="Size of text", type=int,
+        default=GMP_DEFAULT_FONT_SIZE)
     parser.add_argument("--max-size", help="Max size of output image",
-        default=GMP_MAX_SIZE)
+        default=GMP_DEFAULT_MAX_SIZE)
     parser.add_argument("--technical-info", help="Include technical info (iso, F, exposure)",
         action='store_true')
     args = parser.parse_args()
@@ -159,7 +117,8 @@ if __name__ == '__main__':
         title=args.title,
         title_img=args.title_img,
         year=args.year,
-        technical_info=args.technical_info
+        technical_info=args.technical_info,
+        exif_copyright=args.exif_copyright
     )
 
     sys.exit(exit_status)

@@ -42,8 +42,8 @@ logger = logging.getLogger('GarnishMyPic')
 
 def do_garnish(src_filename, dst_filename, author,
     font_file, font_size, output_quality, border_size, border_size_bottom, border_color,
-    max_size, year, technical_info, title=None,
-    title_img=None, overwrite=False):
+    max_size, year, technical_info, exif_copyright,
+    title=None, title_img=None, overwrite=False):
     """
     Process the pic and garnish it. Returns the 'exit status'.
     """
