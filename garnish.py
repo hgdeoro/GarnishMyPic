@@ -18,7 +18,10 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #===============================================================================
 
-from StringIO import StringIO
+#
+# TODO: add "copyright" exif tags
+#
+
 import datetime
 import logging
 import os
