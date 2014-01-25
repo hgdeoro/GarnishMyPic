@@ -43,6 +43,7 @@ PROPAGANDA = None  # PROPAGANDA = "http://goo.gl/K0tWH"
 # BORDER_SIZE_BOTTOM should be "title img" + some margin
 BORDER_SIZE_BOTTOM = 20
 BORDER_SIZE_BOTTOM_MARGIN = 5
+FONT_COLOR = '#ccc'
 
 #
 # Different ways to get exiv information:
@@ -138,21 +139,26 @@ def do_garnish(src_filename, dst_filename, author,
     real_border_size = (border_size, border_size, border_size, border_size + border_size_bottom)
     garnished = ImageOps.expand(garnished, border=real_border_size, fill=border_color)
 
+    #===========================================================================
+    # Start writing at the bottom
+    #===========================================================================
     # TODO: check math for non-default thumb size
     from_left = border_size
     from_top = garnished.size[1] - border_size - border_size_bottom + BORDER_SIZE_BOTTOM_MARGIN
-
     # pos start with "from_left", and is incremented while we add contents (img, text)
     pos = from_left
 
     draw = ImageDraw.Draw(garnished)
 
+    font_color = ImageColor.getcolor(FONT_COLOR, garnished.mode)
+
     if title:
         text = u"'{0}' ".format(title)  # WITH trailing space!
         draw.text([pos, from_top], text,
-            fill=ImageColor.getcolor('black', garnished.mode), font=font)
+            fill=font_color, font=font)
         text_width = draw.textsize(text, font=font)[0]
         pos = pos + text_width
+
     elif title_img_image:
         # paste(img, pos, mask) // mask -> transparency
         garnished.paste(title_img_image, (pos, from_top - 0,), title_img_image)
@@ -161,26 +167,28 @@ def do_garnish(src_filename, dst_filename, author,
     #    # Copyright
     #    text = u"©{0} {1} ".format(year, author)  # WITH trailing space!
     #    draw.text([pos, from_top], text,
-    #        fill=ImageColor.getcolor('black', garnished.mode), font=font)
+    #        fill=font_color, font=font)
     #    text_width = draw.textsize(text, font=font)[0]
     #    pos = pos + text_width
+
+    # Separate the texts
+    pos = pos + 10
 
     if basic_info is False and (exif_info.camera or exif_info.iso or \
         exif_info.aperture or exif_info.shutter):
 
-        # Paste camera icon
-        pos = pos + 10
-        camera_icon = Image.open(StringIO(CAMERA_ICON))
-        camera_icon.load()
-        garnished.paste(camera_icon, (pos, from_top - 2,))
-        pos = pos + camera_icon.size[0] + 2
+        #        # Paste camera icon
+        #        camera_icon = Image.open(StringIO(CAMERA_ICON))
+        #        camera_icon.load()
+        #        garnished.paste(camera_icon, (pos, from_top - 2,))
+        #        pos = pos + camera_icon.size[0] + 2
 
         separator = ''
 
         if exif_info.camera:
             text = "{0}{1}".format(separator, exif_info.camera)
             draw.text([pos, from_top], text,
-                fill=ImageColor.getcolor('black', garnished.mode), font=font)
+                fill=font_color, font=font)
             text_width = draw.textsize(text, font=font)[0]
             pos = pos + text_width
             separator = ' - '
@@ -188,7 +196,7 @@ def do_garnish(src_filename, dst_filename, author,
         if exif_info.shutter:
             text = "{0}Exp {1}".format(separator, exif_info.shutter)
             draw.text([pos, from_top], text,
-                fill=ImageColor.getcolor('black', garnished.mode), font=font)
+                fill=font_color, font=font)
             text_width = draw.textsize(text, font=font)[0]
             pos = pos + text_width
             separator = ' - '
@@ -196,7 +204,7 @@ def do_garnish(src_filename, dst_filename, author,
         if exif_info.iso:
             text = "{0}ISO {1}".format(separator, exif_info.iso)
             draw.text([pos, from_top], text,
-                fill=ImageColor.getcolor('black', garnished.mode), font=font)
+                fill=font_color, font=font)
             text_width = draw.textsize(text, font=font)[0]
             pos = pos + text_width
             separator = ' - '
@@ -204,7 +212,7 @@ def do_garnish(src_filename, dst_filename, author,
         if exif_info.aperture:
             text = "{0}f/{1}".format(separator, exif_info.aperture)
             draw.text([pos, from_top], text,
-                fill=ImageColor.getcolor('black', garnished.mode), font=font)
+                fill=font_color, font=font)
             text_width = draw.textsize(text, font=font)[0]
             pos = pos + text_width
             separator = ' - '
