@@ -121,21 +121,17 @@ if __name__ == '__main__':
     parser.add_argument("--title-img", help="Image to use for title at the bottom")
     parser.add_argument("--year", help="Year to use on copyright (defaults to current year)",
         default=datetime.date.today().year)
-    parser.add_argument("--overwrite", help="Overwrite dst_file if exists",
-        action='store_true')
+    parser.add_argument("--overwrite", help="Overwrite dst_file if exists", action='store_true')
     parser.add_argument("--output-quality", help="Quality of generated JPG (1-100)",
         type=int, default=GMP_OUTPUT_QUALITY)
     parser.add_argument("--border-size", help="Border size in pixels",
         type=int, default=GMP_BORDER)
-    parser.add_argument("--border-color", help="Border color",
-        default=GMP_COLOR)
-    parser.add_argument("--font", help="Path to the TrueType font to use",
-        default=GMP_FONT)
-    parser.add_argument("--font-size", help="Size of text",
-        type=int, default=GMP_FONT_SIZE)
+    parser.add_argument("--border-color", help="Border color", default=GMP_COLOR)
+    parser.add_argument("--font", help="Path to the TrueType font to use", default=GMP_FONT)
+    parser.add_argument("--font-size", help="Size of text", type=int, default=GMP_FONT_SIZE)
     parser.add_argument("--max-size", help="Max size of output image",
         default=GMP_MAX_SIZE)
-    parser.add_argument("--basic-info", help="Doesn't include technical info (iso, F, exposure)",
+    parser.add_argument("--technical-info", help="Include technical info (iso, F, exposure)",
         action='store_true')
     args = parser.parse_args()
 
@@ -163,7 +159,7 @@ if __name__ == '__main__':
         title=args.title,
         title_img=args.title_img,
         year=args.year,
-        basic_info=args.basic_info
+        technical_info=args.technical_info
     )
 
     sys.exit(exit_status)
