@@ -150,9 +150,12 @@ def do_garnish(src_filename, dst_filename, author,
     #===========================================================================
     # TODO: check math for non-default thumb size
     from_left = border_size
+    from_right = garnished.size[0] - border_size
     from_top = garnished.size[1] - border_size - border_size_bottom + BORDER_SIZE_BOTTOM_MARGIN
     # pos start with "from_left", and is incremented while we add contents (img, text)
+
     pos = from_left
+    pos_r = from_right
 
     draw = ImageDraw.Draw(garnished)
 
@@ -186,45 +189,38 @@ def do_garnish(src_filename, dst_filename, author,
     if basic_info is False and (exif_info.camera or exif_info.iso or \
         exif_info.aperture or exif_info.shutter):
 
-        # Paste camera icon
-        garnished.paste(camera_image, (pos, from_top - 2,), camera_image)
-        pos = pos + camera_image.size[0] + 2
-
         separator = ''
 
-        if exif_info.camera:
-            text = "{0}{1}".format(separator, exif_info.camera)
-            draw.text([pos, from_top], text,
-                fill=font_color, font=font)
+        def rtl(text, rpos, draw):
             text_width = draw.textsize(text, font=font)[0]
-            pos = pos + text_width
-            separator = ' - '
+            draw.text([rpos - text_width, from_top], text, fill=font_color, font=font)
+            return rpos - text_width
 
-        if exif_info.shutter:
-            text = "{0}Exp {1}".format(separator, exif_info.shutter)
-            draw.text([pos, from_top], text,
-                fill=font_color, font=font)
-            text_width = draw.textsize(text, font=font)[0]
-            pos = pos + text_width
+        if exif_info.aperture:
+            text = "f/{1}{0}".format(separator, exif_info.aperture)
+            pos_r = rtl(text, pos_r, draw)
             separator = ' - '
 
         if exif_info.iso:
-            text = "{0}ISO {1}".format(separator, exif_info.iso)
-            draw.text([pos, from_top], text,
-                fill=font_color, font=font)
-            text_width = draw.textsize(text, font=font)[0]
-            pos = pos + text_width
+            text = "ISO {1}{0}".format(separator, exif_info.iso)
+            pos_r = rtl(text, pos_r, draw)
             separator = ' - '
 
-        if exif_info.aperture:
-            text = "{0}f/{1}".format(separator, exif_info.aperture)
-            draw.text([pos, from_top], text,
-                fill=font_color, font=font)
-            text_width = draw.textsize(text, font=font)[0]
-            pos = pos + text_width
+        if exif_info.shutter:
+            text = "Exp {1}{0}".format(separator, exif_info.shutter)
+            pos_r = rtl(text, pos_r, draw)
             separator = ' - '
 
-    if pos >= garnished.size[1]:
+        if exif_info.camera:
+            text = "{1}{0}".format(separator, exif_info.camera)
+            pos_r = rtl(text, pos_r, draw)
+            separator = ' - '
+
+        # Paste camera icon
+        camera_pos = pos_r - camera_image.size[0] - 2
+        garnished.paste(camera_image, (camera_pos, pos, ), camera_image)
+
+    if pos >= garnished.size[1] or pos_r < pos:
         logger.warn("Text exceeded image width")
     #    else:
     #        if PROPAGANDA:
