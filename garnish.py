@@ -70,7 +70,7 @@ if __name__ == '__main__':
     GMP_DEFAULT_FONT_SIZE = env_get_int('GMP_DEFAULT_FONT_SIZE', 12)
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("src_file", help="Path to the original photography")
+    parser.add_argument("input_files", help="Input files to process", nargs="+")
     parser.add_argument("--output_dir", "-d", help="Output directory (default: Desktop)")
     parser.add_argument("--author", help="Author information", default=GMP_AUTHOR)
     parser.add_argument("--exif-copyright", help="Information to set as 'copyright' exif tag",
@@ -97,6 +97,10 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # TODO: check proper conversion of these int()s and show error message on error
+    
+    #===========================================================================
+    # Check image size
+    #===========================================================================
     try:
         max_size = [int(size) for size in args.max_size.split('x')]
     except KeyError:
@@ -108,14 +112,6 @@ if __name__ == '__main__':
         parser.error("Wrong --max-size: must specify in the form WIDTHxHEIGHT (ej: 800x800)")
 
     #===========================================================================
-    # Clean & check input file
-    #===========================================================================
-    input_filename_full_path = os.path.normpath(os.path.abspath(args.src_file))
-
-    if not os.path.exists(input_filename_full_path):
-        parser.error("The input file '%s' does not exists", input_filename_full_path)
-
-    #===========================================================================
     # output_dir
     #===========================================================================
     if args.output_dir:
@@ -125,29 +121,39 @@ if __name__ == '__main__':
 
     assert os.path.isdir(output_dir), "Output directory {} is not a directory".format(output_dir)
 
-    #===========================================================================
-    # Build output file
-    #===========================================================================
-    input_basename = os.path.basename(input_filename_full_path)
-    fn_root, fn_ext = os.path.splitext(input_basename)
-    output_basename = "{}_garnish{}".format(fn_root, fn_ext)
-    output = os.path.join(output_dir, output_basename)
+    for input_file in args.input_files:
 
-    exit_status = do_garnish(args.src_file, output,
-        author=args.author,
-        overwrite=args.overwrite,
-        font_file=args.font,
-        font_size=args.font_size,
-        output_quality=args.output_quality,
-        border_size=args.border_size,
-        border_color=args.border_color,
-        border_size_bottom=BORDER_SIZE_BOTTOM,
-        max_size=max_size,
-        title=args.title,
-        title_img=args.title_img,
-        year=args.year,
-        technical_info=args.technical_info,
-        exif_copyright=args.exif_copyright
-    )
+        #===========================================================================
+        # Clean & check input file
+        #===========================================================================
+        input_filename_full_path = os.path.normpath(os.path.abspath(input_file))
+    
+        if not os.path.exists(input_filename_full_path):
+            parser.error("The input file '%s' does not exists", input_filename_full_path)
+    
+        #===========================================================================
+        # Build output file
+        #===========================================================================
+        input_basename = os.path.basename(input_filename_full_path)
+        fn_root, fn_ext = os.path.splitext(input_basename)
+        output_basename = "{}_garnish{}".format(fn_root, fn_ext)
+        output = os.path.join(output_dir, output_basename)
+
+        exit_status = do_garnish(input_file, output,
+            author=args.author,
+            overwrite=args.overwrite,
+            font_file=args.font,
+            font_size=args.font_size,
+            output_quality=args.output_quality,
+            border_size=args.border_size,
+            border_color=args.border_color,
+            border_size_bottom=BORDER_SIZE_BOTTOM,
+            max_size=max_size,
+            title=args.title,
+            title_img=args.title_img,
+            year=args.year,
+            technical_info=args.technical_info,
+            exif_copyright=args.exif_copyright
+        )
 
     sys.exit(exit_status)
