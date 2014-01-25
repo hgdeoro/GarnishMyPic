@@ -62,8 +62,6 @@ def do_garnish(src_filename, dst_filename, author,
     # TODO: check input file is JPEG
     # TODO: check output file extension is JPEG
 
-    THUMB_SIZE = (max_size[0] - (border_size * 4), max_size[1] - (border_size * 4))
-
     # TODO: enhance error message
     if not os.path.exists(src_filename):
         logger.error("The input file '%s' does not exists", src_filename)
@@ -89,13 +87,11 @@ def do_garnish(src_filename, dst_filename, author,
     exif_info = get_exif_info(src_filename)
 
     # Create the thumb...
-    src_image.thumbnail(THUMB_SIZE, Image.ANTIALIAS)
+    src_image.thumbnail(max_size, Image.ANTIALIAS)
 
-    # Add the border
-    src_image = ImageOps.expand(src_image, border=border_size, fill='black')
-
-    # Add the 2nd border
-    src_image = ImageOps.expand(src_image, border=border_size, fill=border_color)
+    # Add the border -> left, top, right, bottom
+    real_border_size = (border_size, border_size, border_size, border_size + 32)
+    src_image = ImageOps.expand(src_image, border=real_border_size, fill=border_color)
 
     # TODO: check math for non-default thumb size
     w = src_image.size[0]
@@ -214,19 +210,19 @@ if __name__ == '__main__':
         GMP_OUTPUT_QUALITY = int(os.environ['GMP_OUTPUT_QUALITY'])
     except KeyError:
         # TODO: log warn message
-        GMP_OUTPUT_QUALITY = 95
+        GMP_OUTPUT_QUALITY = 97
     except ValueError:
         # TODO: log warn message
-        GMP_OUTPUT_QUALITY = 95
+        GMP_OUTPUT_QUALITY = 97
 
     try:
         GMP_BORDER = int(os.environ['GMP_DEFAULT_BORDER'])
     except KeyError:
         # TODO: log warn message
-        GMP_BORDER = 4
+        GMP_BORDER = 10
     except ValueError:
         # TODO: log warn message
-        GMP_BORDER = 4
+        GMP_BORDER = 10
 
     try:
         GMP_FONT = os.environ['GMP_DEFAULT_FONT']
@@ -261,7 +257,6 @@ if __name__ == '__main__':
     except KeyError:
         # TODO: log warn message
         GMP_COLOR = '#545454'
-        GMP_COLOR = '#eee'
 
     parser = argparse.ArgumentParser()
     parser.add_argument("src_file", help="Path to the original photography")
