@@ -20,7 +20,7 @@
 
 import os
 
-from PIL import Image, ImageColor, ImageDraw, ImageFont, ImageOps
+from PIL import Image
 
 
 def get_default_font():
