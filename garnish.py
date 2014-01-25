@@ -37,6 +37,13 @@ logger = logging.getLogger('GarnishMyPic')
 
 PROPAGANDA = None  # PROPAGANDA = "http://goo.gl/K0tWH"
 
+#===============================================================================
+# Hardcoded stuff... some day passed as parameter
+#===============================================================================
+# BORDER_SIZE_BOTTOM should be "title img" + some margin
+BORDER_SIZE_BOTTOM = 20
+BORDER_SIZE_BOTTOM_MARGIN = 5
+
 #
 # Different ways to get exiv information:
 #
@@ -127,19 +134,11 @@ def do_garnish(src_filename, dst_filename, author,
     real_border_size = (border_size, border_size, border_size, border_size + border_size_bottom)
     src_image = ImageOps.expand(src_image, border=real_border_size, fill=border_color)
 
-    ####    # TODO: check math for non-default thumb size
-    ####    w = src_image.size[0]
-    ####    h = src_image.size[1] + 20 - border_size
-    ####
-    ####    garnished = Image.new(src_image.mode, [w, h],
-    ####        ImageColor.getcolor('white', src_image.mode))
-    ####    garnished.paste(src_image, (0, 0))
-
     garnished = src_image
 
     # TODO: check math for non-default thumb size
     from_left = 8
-    from_top = src_image.size[1] - border_size - border_size_bottom + 4
+    from_top = src_image.size[1] - border_size - border_size_bottom + BORDER_SIZE_BOTTOM_MARGIN
 
     # pos start with "from_left", and is incremented while we add contents (img, text)
     pos = from_left
@@ -340,7 +339,7 @@ if __name__ == '__main__':
         output_quality=args.output_quality,
         border_size=args.border_size,
         border_color=args.border_color,
-        border_size_bottom=30,
+        border_size_bottom=BORDER_SIZE_BOTTOM,
         max_size=max_size,
         title=args.title,
         title_img=args.title_img,
