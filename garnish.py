@@ -167,11 +167,12 @@ def do_garnish(src_filename, dst_filename, author,
     #===========================================================================
     # Copyright
     #===========================================================================
-    #    text = u"©{0} {1} ".format(year, author)  # WITH trailing space!
-    #    draw.text([pos, from_top], text,
-    #        fill=font_color, font=font)
-    #    text_width = draw.textsize(text, font=font)[0]
-    #    pos = pos + text_width
+    if author:
+        text = u"©{0} {1} ".format(year, author)  # WITH trailing space!
+        draw.text([pos, from_top], text,
+            fill=font_color, font=font)
+        text_width = draw.textsize(text, font=font)[0]
+        pos = pos + text_width
 
     # Separate the texts
     pos = pos + 10
@@ -327,10 +328,6 @@ if __name__ == '__main__':
     parser.add_argument("--basic-info", help="Doesn't include technical info (iso, F, exposure)",
         action='store_true')
     args = parser.parse_args()
-
-    if not args.author:
-        parser.error("You must specify 'GMP_AUTHOR' environment variable, "
-            "or the --author argument")
 
     # TODO: check proper conversion of these int()s and show error message on error
     try:
