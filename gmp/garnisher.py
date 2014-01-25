@@ -222,6 +222,6 @@ def do_garnish(src_filename, dst_filename, author,
 
     garnished.save(dst_filename, quality=output_quality, format='JPEG')
 
-    copy_exif_info(src_filename, dst_filename)
+    copy_exif_info(src_filename, dst_filename, copyright_value=exif_copyright)
 
     return 0
