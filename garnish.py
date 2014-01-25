@@ -161,7 +161,7 @@ def copy_exif_info(src_filename, dst_filename):
 
 
 def do_garnish(src_filename, dst_filename, author=None, overwrite=False,
-    font_file=None, font_size=None, output_quality=None, border_size=None,
+    font_file=None, font_size=None, output_quality=None, border_size=None, border_color=None,
     max_size=None, title=None, year=None, basic_info=None):
     """
     Process the pic and garnish it. Returns the 'exit status'.
@@ -175,6 +175,7 @@ def do_garnish(src_filename, dst_filename, author=None, overwrite=False,
     assert font_size is not None
     assert output_quality is not None
     assert border_size is not None
+    assert border_color is not None
     assert max_size is not None
     assert year is not None
     assert basic_info is not None
@@ -204,10 +205,14 @@ def do_garnish(src_filename, dst_filename, author=None, overwrite=False,
     # Get the exif info
     exif_info = get_exif_info(src_filename)
 
-    # Create the thumb and add the border
+    # Create the thumb...
     src_image.thumbnail(THUMB_SIZE, Image.ANTIALIAS)
+
+    # Add the border
     src_image = ImageOps.expand(src_image, border=border_size, fill='black')
-    src_image = ImageOps.expand(src_image, border=border_size, fill='#eee')
+
+    # Add the 2nd border
+    src_image = ImageOps.expand(src_image, border=border_size, fill=border_color)
 
     # TODO: check math for non-default thumb size
     w = src_image.size[0]
@@ -375,6 +380,13 @@ if __name__ == '__main__':
         # TODO: log warn message
         GMP_MAX_SIZE = '800x800'
 
+    try:
+        GMP_COLOR = os.environ['GMP_COLOR']
+    except KeyError:
+        # TODO: log warn message
+        GMP_COLOR = '#545454'
+        GMP_COLOR = '#eee'
+
     parser = argparse.ArgumentParser()
     parser.add_argument("src_file", help="Path to the original photography")
     parser.add_argument("dst_file", help="Path where to create the thumbnail")
@@ -389,6 +401,8 @@ if __name__ == '__main__':
         type=int, default=GMP_OUTPUT_QUALITY)
     parser.add_argument("--border-size", help="Border size in pixels",
         type=int, default=GMP_BORDER)
+    parser.add_argument("--border-color", help="Border color",
+        default=GMP_COLOR)
     parser.add_argument("--font", help="Path to the TrueType font to use",
         default=GMP_FONT)
     parser.add_argument("--font-size", help="Size of text",
@@ -421,6 +435,7 @@ if __name__ == '__main__':
         font_size=args.font_size,
         output_quality=args.output_quality,
         border_size=args.border_size,
+        border_color=args.border_color,
         max_size=max_size,
         title=args.title,
         year=args.year,
