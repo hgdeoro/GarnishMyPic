@@ -218,7 +218,7 @@ def do_garnish(src_filename, dst_filename, author,
 
         # Paste camera icon
         camera_pos = pos_r - camera_image.size[0] - 2
-        garnished.paste(camera_image, (camera_pos, pos, ), camera_image)
+        garnished.paste(camera_image, (camera_pos, from_top, ), camera_image)
 
     if pos >= garnished.size[1] or pos_r < pos:
         logger.warn("Text exceeded image width")
