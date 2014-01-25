@@ -52,25 +52,15 @@ PROPAGANDA = None  # PROPAGANDA = "http://goo.gl/K0tWH"
 #
 
 
-def do_garnish(src_filename, dst_filename, author=None, overwrite=False,
-    font_file=None, font_size=None, output_quality=None, border_size=None, border_color=None,
-    max_size=None, title=None, year=None, basic_info=None):
+def do_garnish(src_filename, dst_filename, author,
+    font_file, font_size, output_quality, border_size, border_color,
+    max_size, year, basic_info, title=None, overwrite=False):
     """
     Process the pic and garnish it. Returns the 'exit status'.
     """
 
     # TODO: check input file is JPEG
     # TODO: check output file extension is JPEG
-
-    assert author is not None
-    assert font_file is not None
-    assert font_size is not None
-    assert output_quality is not None
-    assert border_size is not None
-    assert border_color is not None
-    assert max_size is not None
-    assert year is not None
-    assert basic_info is not None
 
     THUMB_SIZE = (max_size[0] - (border_size * 4), max_size[1] - (border_size * 4))
 
