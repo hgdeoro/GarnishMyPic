@@ -63,6 +63,7 @@ if __name__ == '__main__':
     GMP_FONT = os.environ.get('GMP_FONT', get_default_font())
     GMP_DEFAULT_MAX_SIZE = os.environ.get('GMP_DEFAULT_MAX_SIZE', '800x800')
     GMP_COLOR = os.environ.get('GMP_COLOR', '#545454')
+    GMP_TITLE_IMAGE = os.environ.get('GMP_TITLE_IMAGE', None)
 
     GMP_OUTPUT_QUALITY = env_get_int('GMP_OUTPUT_QUALITY', 97)
     GMP_BORDER = env_get_int('GMP_DEFAULT_BORDER', 10)
@@ -70,16 +71,19 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     parser.add_argument("src_file", help="Path to the original photography")
-    parser.add_argument("dst_file", help="Path where to create the thumbnail")
+    parser.add_argument("dst_file", help="Path where to create the thumbnail "
+        "(Optional: defaults to desktop)", nargs="?")
     parser.add_argument("--author", help="Author information", default=GMP_AUTHOR)
     parser.add_argument("--exif-copyright", help="Information to set as 'copyright' exif tag",
         default=GMP_EXIF_COPYRIGHT)
     parser.add_argument("--title", help="Title of the pic")
-    parser.add_argument("--title-img", help="Image to use for title at the bottom")
+    parser.add_argument("--title-img", help="Image to use for title at the bottom",
+        default=GMP_TITLE_IMAGE)
     parser.add_argument("--year", help="Year to use on copyright (defaults to current year)",
         default=datetime.date.today().year)
-    parser.add_argument("--overwrite", help="Overwrite dst_file if exists", action='store_true')
-    parser.add_argument("--output-quality", help="Quality of generated JPG (1-100)",
+    parser.add_argument("--overwrite", "-o", help="Overwrite dst_file if exists",
+        action='store_true')
+    parser.add_argument("--output-quality", "-q", help="Quality of generated JPG (1-100)",
         type=int, default=GMP_OUTPUT_QUALITY)
     parser.add_argument("--border-size", help="Border size in pixels",
         type=int, default=GMP_BORDER)
@@ -89,7 +93,7 @@ if __name__ == '__main__':
         default=GMP_DEFAULT_FONT_SIZE)
     parser.add_argument("--max-size", help="Max size of output image",
         default=GMP_DEFAULT_MAX_SIZE)
-    parser.add_argument("--technical-info", help="Include technical info (iso, F, exposure)",
+    parser.add_argument("--technical-info", "-i", help="Include technical info (iso, F, exposure)",
         action='store_true')
     args = parser.parse_args()
 
@@ -104,7 +108,23 @@ if __name__ == '__main__':
     if len(max_size) != 2:
         parser.error("Wrong --max-size: must specify in the form WIDTHxHEIGHT (ej: 800x800)")
 
-    exit_status = do_garnish(args.src_file, args.dst_file,
+    input_filename_full_path = os.path.normpath(os.path.abspath(args.src_file))
+
+    if not os.path.exists(input_filename_full_path):
+        parser.error("The input file '%s' does not exists", input_filename_full_path)
+
+    if args.dst_file:
+        dst_file = args.dst_file
+    else:
+        input_basename = os.path.basename(input_filename_full_path)
+        fn_root, fn_ext = os.path.splitext(input_basename)
+
+        desktop = os.path.join(os.path.abspath(os.path.expanduser('~')), "Desktop/")
+        assert os.path.isdir(desktop), "{} is not a directory".format(desktop)
+        output_filename = "{}_garnish{}".format(fn_root, fn_ext)
+        dst_file = os.path.join(desktop, output_filename)
+
+    exit_status = do_garnish(args.src_file, dst_file,
         author=args.author,
         overwrite=args.overwrite,
         font_file=args.font,

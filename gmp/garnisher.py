@@ -55,9 +55,6 @@ def do_garnish(src_filename, dst_filename, author,
     # Check if src/dst exists
     # TODO: enhance error message
     #===========================================================================
-    if not os.path.exists(src_filename):
-        logger.error("The input file '%s' does not exists", src_filename)
-        return 1
 
     if overwrite:
         if os.path.exists(dst_filename):
