@@ -128,7 +128,7 @@ def do_garnish(src_filename, dst_filename, author,
             return 1
 
     # Camera icon
-    camera_image = get_camera_image((font_size + 10, font_size + 10, ))
+    camera_image = get_camera_image((font_size + 2, font_size + 2, ))
 
     #===========================================================================
     # Create the thumb and a copy to work on
