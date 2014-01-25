@@ -19,7 +19,7 @@
 #===============================================================================
 
 #
-# TODO: add "copyright" exif tags
+# TODO: add "copyright" exif 
 #
 
 import datetime
@@ -31,7 +31,7 @@ from PIL import Image, ImageColor, ImageDraw, ImageFont, ImageOps
 
 from gmp.exif import get_exif_info, copy_exif_info
 from gmp.resources import CAMERA_ICON
-from gmp.utils import get_default_font
+from gmp.utils import get_default_font, get_camera_image
 
 
 # TODO: use system font or add font file - check license!
@@ -127,6 +127,9 @@ def do_garnish(src_filename, dst_filename, author,
             logger.error("The specified font file doens't exists: %s", font_file)
             return 1
 
+    # Camera icon
+    camera_image = get_camera_image((font_size + 10, font_size + 10, ))
+
     #===========================================================================
     # Create the thumb and a copy to work on
     #===========================================================================
@@ -183,11 +186,9 @@ def do_garnish(src_filename, dst_filename, author,
     if basic_info is False and (exif_info.camera or exif_info.iso or \
         exif_info.aperture or exif_info.shutter):
 
-        #        # Paste camera icon
-        #        camera_icon = Image.open(StringIO(CAMERA_ICON))
-        #        camera_icon.load()
-        #        garnished.paste(camera_icon, (pos, from_top - 2,))
-        #        pos = pos + camera_icon.size[0] + 2
+        # Paste camera icon
+        garnished.paste(camera_image, (pos, from_top - 2,), camera_image)
+        pos = pos + camera_image.size[0] + 2
 
         separator = ''
 

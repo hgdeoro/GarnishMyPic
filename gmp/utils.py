@@ -20,9 +20,21 @@
 
 import os
 
+from PIL import Image, ImageColor, ImageDraw, ImageFont, ImageOps
+
 
 def get_default_font():
     this_dir = os.path.dirname(os.path.abspath(__file__))
     default_font = os.path.join(this_dir, '../LiberationSans-Regular.ttf')
     assert os.path.exists(default_font)
     return default_font
+
+
+def get_camera_image(max_size):
+    this_dir = os.path.dirname(os.path.abspath(__file__))
+    camera_icon_filename = os.path.join(this_dir, '../camera-icon.png')
+    assert os.path.exists(camera_icon_filename)
+
+    camera_image = Image.open(camera_icon_filename)
+    camera_image.thumbnail(max_size, Image.ANTIALIAS)
+    return camera_image
