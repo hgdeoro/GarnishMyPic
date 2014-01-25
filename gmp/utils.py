@@ -47,3 +47,20 @@ def env_get_int(env_name, default):
         return default
     except ValueError:
         return default
+
+#===============================================================================
+# Default values
+#===============================================================================
+GMP_AUTHOR = os.environ.get('GMP_AUTHOR', None)
+GMP_EXIF_COPYRIGHT = os.environ.get('GMP_EXIF_COPYRIGHT', None)
+GMP_FONT = os.environ.get('GMP_FONT', get_default_font())
+GMP_DEFAULT_MAX_SIZE = os.environ.get('GMP_DEFAULT_MAX_SIZE', '800x800')
+GMP_COLOR = os.environ.get('GMP_COLOR', '#545454')
+GMP_TITLE_IMAGE = os.environ.get('GMP_TITLE_IMAGE', None)
+GMP_TITLE = os.environ.get('GMP_TITLE', None)
+GMP_OUTPUT_DIR = os.environ.get('GMP_OUTPUT_DIR',
+    os.path.join(os.path.abspath(os.path.expanduser('~')), "Desktop/"))
+
+GMP_OUTPUT_QUALITY = env_get_int('GMP_OUTPUT_QUALITY', 97)
+GMP_BORDER = env_get_int('GMP_DEFAULT_BORDER', 10)
+GMP_DEFAULT_FONT_SIZE = env_get_int('GMP_DEFAULT_FONT_SIZE', 12)

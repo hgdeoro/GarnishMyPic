@@ -28,7 +28,10 @@ import os
 import sys
 
 from gmp.garnisher import do_garnish, BORDER_SIZE_BOTTOM
-from gmp.utils import get_default_font, env_get_int
+from gmp.utils import GMP_AUTHOR,\
+    GMP_EXIF_COPYRIGHT, GMP_TITLE_IMAGE, GMP_TITLE, GMP_OUTPUT_QUALITY,\
+    GMP_BORDER, GMP_COLOR, GMP_FONT, GMP_DEFAULT_FONT_SIZE, GMP_DEFAULT_MAX_SIZE,\
+    GMP_OUTPUT_DIR
 
 
 # TODO: use system font or add font file - check license!
@@ -58,24 +61,16 @@ if __name__ == '__main__':
     # (those that are the same for different pics)
     #===============================================================================
 
-    GMP_AUTHOR = os.environ.get('GMP_AUTHOR', None)
-    GMP_EXIF_COPYRIGHT = os.environ.get('GMP_EXIF_COPYRIGHT', None)
-    GMP_FONT = os.environ.get('GMP_FONT', get_default_font())
-    GMP_DEFAULT_MAX_SIZE = os.environ.get('GMP_DEFAULT_MAX_SIZE', '800x800')
-    GMP_COLOR = os.environ.get('GMP_COLOR', '#545454')
-    GMP_TITLE_IMAGE = os.environ.get('GMP_TITLE_IMAGE', None)
-
-    GMP_OUTPUT_QUALITY = env_get_int('GMP_OUTPUT_QUALITY', 97)
-    GMP_BORDER = env_get_int('GMP_DEFAULT_BORDER', 10)
-    GMP_DEFAULT_FONT_SIZE = env_get_int('GMP_DEFAULT_FONT_SIZE', 12)
-
     parser = argparse.ArgumentParser()
     parser.add_argument("input_files", help="Input files to process", nargs="+")
-    parser.add_argument("--output_dir", "-d", help="Output directory (default: Desktop)")
-    parser.add_argument("--author", help="Author information", default=GMP_AUTHOR)
+    parser.add_argument("--output-dir", "-d", help="Output directory",
+        default=GMP_OUTPUT_DIR)
+    parser.add_argument("--author", help="Author information",
+        default=GMP_AUTHOR)
     parser.add_argument("--exif-copyright", help="Information to set as 'copyright' exif tag",
         default=GMP_EXIF_COPYRIGHT)
-    parser.add_argument("--title", help="Title of the pic")
+    parser.add_argument("--title", help="Title of the pic",
+        default=GMP_TITLE)
     parser.add_argument("--title-img", help="Image to use for title at the bottom",
         default=GMP_TITLE_IMAGE)
     parser.add_argument("--year", help="Year to use on copyright (defaults to current year)",
@@ -111,35 +106,8 @@ if __name__ == '__main__':
     if len(max_size) != 2:
         parser.error("Wrong --max-size: must specify in the form WIDTHxHEIGHT (ej: 800x800)")
 
-    #===========================================================================
-    # output_dir
-    #===========================================================================
-    if args.output_dir:
-        output_dir = args.output_dir
-    else:
-        output_dir = os.path.join(os.path.abspath(os.path.expanduser('~')), "Desktop/")
-
-    assert os.path.isdir(output_dir), "Output directory {} is not a directory".format(output_dir)
-
     for input_file in args.input_files:
-
-        #===========================================================================
-        # Clean & check input file
-        #===========================================================================
-        input_filename_full_path = os.path.normpath(os.path.abspath(input_file))
-    
-        if not os.path.exists(input_filename_full_path):
-            parser.error("The input file '%s' does not exists", input_filename_full_path)
-    
-        #===========================================================================
-        # Build output file
-        #===========================================================================
-        input_basename = os.path.basename(input_filename_full_path)
-        fn_root, fn_ext = os.path.splitext(input_basename)
-        output_basename = "{}_garnish{}".format(fn_root, fn_ext)
-        output = os.path.join(output_dir, output_basename)
-
-        exit_status = do_garnish(input_file, output,
+        exit_status = do_garnish(input_file, args.output_dir,
             author=args.author,
             overwrite=args.overwrite,
             font_file=args.font,

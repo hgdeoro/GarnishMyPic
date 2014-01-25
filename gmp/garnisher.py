@@ -40,7 +40,7 @@ PROPAGANDA = None  # PROPAGANDA = "http://goo.gl/K0tWH"
 logger = logging.getLogger('GarnishMyPic')
 
 
-def do_garnish(src_filename, dst_filename, author,
+def do_garnish(input_file, output_dir, author,
     font_file, font_size, output_quality, border_size, border_size_bottom, border_color,
     max_size, year, technical_info, exif_copyright,
     title=None, title_img=None, overwrite=False):
@@ -52,6 +52,25 @@ def do_garnish(src_filename, dst_filename, author,
     # TODO: check output file extension is JPEG
 
     #===========================================================================
+    # Clean & check input file
+    #===========================================================================
+    input_filename_full_path = os.path.normpath(os.path.abspath(input_file))
+
+    if not os.path.exists(input_filename_full_path):
+        raise Exception("The input file '%s' does not exists", input_filename_full_path)
+
+    #===========================================================================
+    # Build output file
+    #===========================================================================
+    input_basename = os.path.basename(input_filename_full_path)
+    fn_root, fn_ext = os.path.splitext(input_basename)
+    output_basename = "{}_garnish{}".format(fn_root, fn_ext)
+    output_file = os.path.join(output_dir, output_basename)
+
+    dst_filename = output_file
+    src_filename = input_file
+
+    #===========================================================================
     # Check if src/dst exists
     # TODO: enhance error message
     #===========================================================================
@@ -61,8 +80,7 @@ def do_garnish(src_filename, dst_filename, author,
             logger.info("Will overwrite output file '%s'", dst_filename)
     else:
         if os.path.exists(dst_filename):
-            logger.error("The output file '%s' already exists", dst_filename)
-            return 1
+            raise Exception("The output file '%s' already exists", dst_filename)
 
     #===========================================================================
     # Get exif
