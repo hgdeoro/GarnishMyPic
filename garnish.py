@@ -348,7 +348,7 @@ if __name__ == '__main__':
         GMP_BORDER = 4
 
     try:
-        GMP_FONT = int(os.environ['GMP_DEFAULT_FONT'])
+        GMP_FONT = os.environ['GMP_DEFAULT_FONT']
     except KeyError:
         # TODO: log warn message
         GMP_FONT = _get_default_font()
@@ -367,6 +367,7 @@ if __name__ == '__main__':
 
     try:
         GMP_MAX_SIZE = int(os.environ['GMP_DEFAULT_MAX_SIZE'])
+        GMP_MAX_SIZE = '{}x{}'.format(GMP_MAX_SIZE, GMP_MAX_SIZE)
     except KeyError:
         # TODO: log warn message
         GMP_MAX_SIZE = '800x800'
