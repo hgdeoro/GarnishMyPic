@@ -18,12 +18,13 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #===============================================================================
 
+import datetime
 import os
 import wx
 
 from gmp.garnisher import do_garnish, BORDER_SIZE_BOTTOM
-from gmp.utils import GMP_OUTPUT_DIR, GMP_AUTHOR, GMP_FONT,\
-    GMP_DEFAULT_FONT_SIZE, GMP_OUTPUT_QUALITY, GMP_BORDER, GMP_COLOR,\
+from gmp.utils import GMP_OUTPUT_DIR, GMP_AUTHOR, GMP_FONT, \
+    GMP_DEFAULT_FONT_SIZE, GMP_OUTPUT_QUALITY, GMP_BORDER, GMP_COLOR, \
     GMP_DEFAULT_MAX_SIZE, GMP_TITLE, GMP_TITLE_IMAGE, GMP_EXIF_COPYRIGHT
 
 
@@ -56,7 +57,7 @@ class MyFileDropTarget(wx.FileDropTarget):
                 max_size=[int(x) for x in GMP_DEFAULT_MAX_SIZE.split('x')],
                 title=GMP_TITLE,
                 title_img=GMP_TITLE_IMAGE,
-                year=2014,
+                year=datetime.date.today().year,
                 technical_info=True,
                 exif_copyright=GMP_EXIF_COPYRIGHT
             )

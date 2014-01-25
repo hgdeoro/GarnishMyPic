@@ -60,6 +60,13 @@ def do_garnish(input_file, output_dir, author,
         raise Exception("The input file '%s' does not exists", input_filename_full_path)
 
     #===========================================================================
+    # Create outpu dir if doesn't exists'
+    #===========================================================================
+
+    if not os.path.exists(output_dir):
+        os.mkdir(output_dir)
+
+    #===========================================================================
     # Build output file
     #===========================================================================
     input_basename = os.path.basename(input_filename_full_path)
