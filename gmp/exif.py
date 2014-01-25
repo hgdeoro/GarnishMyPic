@@ -68,7 +68,7 @@ def get_exif_info(filename):
 
 def copy_exif_info(src_filename, dst_filename, copyright_value=None):
     exif_tags = TRY4ISO + TRY4APERTURE + TRY4SHUTTER + TRY4CAMERA
-    command = ('exiftool', '-all=', '-tagsFromFile', src_filename)
+    command = ('exiftool', '-overwrite_original', '-all=', '-tagsFromFile', src_filename)
     command += tuple("-exif:{0}".format(tag_name) for tag_name in exif_tags)
 
     if copyright_value:
