@@ -87,6 +87,11 @@ def do_garnish(src_filename, dst_filename, author,
             return 1
 
     #===========================================================================
+    # Get exif
+    #===========================================================================
+    exif_info = get_exif_info(src_filename)
+
+    #===========================================================================
     # Open things: src image, title image, font
     #===========================================================================
     try:
@@ -119,26 +124,23 @@ def do_garnish(src_filename, dst_filename, author,
             return 1
 
     #===========================================================================
-    # Get exif
-    #===========================================================================
-    exif_info = get_exif_info(src_filename)
-
-    #===========================================================================
-    # Create the thumb...
+    # Create the thumb and a copy to work on
     #===========================================================================
     src_image.thumbnail(max_size, Image.ANTIALIAS)
+
+    garnished = Image.new(src_image.mode, src_image.size,
+        ImageColor.getcolor('white', src_image.mode))
+    garnished.paste(src_image, (0, 0))
 
     #===========================================================================
     # Add the border -> left, top, right, bottom
     #===========================================================================
     real_border_size = (border_size, border_size, border_size, border_size + border_size_bottom)
-    src_image = ImageOps.expand(src_image, border=real_border_size, fill=border_color)
-
-    garnished = src_image
+    garnished = ImageOps.expand(garnished, border=real_border_size, fill=border_color)
 
     # TODO: check math for non-default thumb size
     from_left = 8
-    from_top = src_image.size[1] - border_size - border_size_bottom + BORDER_SIZE_BOTTOM_MARGIN
+    from_top = garnished.size[1] - border_size - border_size_bottom + BORDER_SIZE_BOTTOM_MARGIN
 
     # pos start with "from_left", and is incremented while we add contents (img, text)
     pos = from_left
@@ -148,7 +150,7 @@ def do_garnish(src_filename, dst_filename, author,
     if title:
         text = u"'{0}' ".format(title)  # WITH trailing space!
         draw.text([pos, from_top], text,
-            fill=ImageColor.getcolor('black', src_image.mode), font=font)
+            fill=ImageColor.getcolor('black', garnished.mode), font=font)
         text_width = draw.textsize(text, font=font)[0]
         pos = pos + text_width
     elif title_img_image:
@@ -159,7 +161,7 @@ def do_garnish(src_filename, dst_filename, author,
     #    # Copyright
     #    text = u"©{0} {1} ".format(year, author)  # WITH trailing space!
     #    draw.text([pos, from_top], text,
-    #        fill=ImageColor.getcolor('black', src_image.mode), font=font)
+    #        fill=ImageColor.getcolor('black', garnished.mode), font=font)
     #    text_width = draw.textsize(text, font=font)[0]
     #    pos = pos + text_width
 
@@ -178,7 +180,7 @@ def do_garnish(src_filename, dst_filename, author,
         if exif_info.camera:
             text = "{0}{1}".format(separator, exif_info.camera)
             draw.text([pos, from_top], text,
-                fill=ImageColor.getcolor('black', src_image.mode), font=font)
+                fill=ImageColor.getcolor('black', garnished.mode), font=font)
             text_width = draw.textsize(text, font=font)[0]
             pos = pos + text_width
             separator = ' - '
@@ -186,7 +188,7 @@ def do_garnish(src_filename, dst_filename, author,
         if exif_info.shutter:
             text = "{0}Exp {1}".format(separator, exif_info.shutter)
             draw.text([pos, from_top], text,
-                fill=ImageColor.getcolor('black', src_image.mode), font=font)
+                fill=ImageColor.getcolor('black', garnished.mode), font=font)
             text_width = draw.textsize(text, font=font)[0]
             pos = pos + text_width
             separator = ' - '
@@ -194,7 +196,7 @@ def do_garnish(src_filename, dst_filename, author,
         if exif_info.iso:
             text = "{0}ISO {1}".format(separator, exif_info.iso)
             draw.text([pos, from_top], text,
-                fill=ImageColor.getcolor('black', src_image.mode), font=font)
+                fill=ImageColor.getcolor('black', garnished.mode), font=font)
             text_width = draw.textsize(text, font=font)[0]
             pos = pos + text_width
             separator = ' - '
@@ -202,12 +204,12 @@ def do_garnish(src_filename, dst_filename, author,
         if exif_info.aperture:
             text = "{0}f/{1}".format(separator, exif_info.aperture)
             draw.text([pos, from_top], text,
-                fill=ImageColor.getcolor('black', src_image.mode), font=font)
+                fill=ImageColor.getcolor('black', garnished.mode), font=font)
             text_width = draw.textsize(text, font=font)[0]
             pos = pos + text_width
             separator = ' - '
 
-    if pos >= src_image.size[1]:
+    if pos >= garnished.size[1]:
         logger.warn("Text exceeded image width")
     #    else:
     #        if PROPAGANDA:
@@ -216,7 +218,7 @@ def do_garnish(src_filename, dst_filename, author,
     #            if (pos + 20 + text_width) < w:
     #                # put at the right of the image
     #                draw.text([(w - text_width - 4), from_top], text,
-    #                    fill=ImageColor.getcolor('#777', src_image.mode), font=font)
+    #                    fill=ImageColor.getcolor('#777', garnished.mode), font=font)
 
     del draw
 
