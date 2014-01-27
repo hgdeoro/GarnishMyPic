@@ -6,4 +6,4 @@ BASEDIR=$(cd $(dirname $0); pwd)
 
 export PYTHONPATH=$BASEDIR:$PYTHONPATH
 
-python $BASEDIR/garnish.py $*
+python $BASEDIR/garnish.py "$@"

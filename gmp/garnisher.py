@@ -42,7 +42,7 @@ logger = logging.getLogger('GarnishMyPic')
 
 def do_garnish(input_file, output_dir, author,
     font_file, font_size, output_quality, border_size, border_size_bottom, border_color,
-    max_size, year, technical_info, exif_copyright,
+    max_size, year, technical_info, exif_copyright, rotate,
     title=None, title_img=None, overwrite=False):
     """
     Process the pic and garnish it. Returns the 'exit status'.
@@ -71,7 +71,9 @@ def do_garnish(input_file, output_dir, author,
     #===========================================================================
     input_basename = os.path.basename(input_filename_full_path)
     fn_root, fn_ext = os.path.splitext(input_basename)
-    output_basename = "{}_garnish{}".format(fn_root, fn_ext)
+    if fn_ext.startswith('.'):
+        fn_ext = fn_ext[1:]
+    output_basename = "{}_garnish_{}.jpg".format(fn_root, fn_ext)
     output_file = os.path.join(output_dir, output_basename)
 
     dst_filename = output_file
@@ -103,6 +105,16 @@ def do_garnish(input_file, output_dir, author,
         logger.error("Couldn't load an image from file %s. Check if it's realy an image",
             src_filename)
         return 1
+
+    if rotate:
+        if rotate == 90:
+            src_image = src_image.transpose(Image.ROTATE_90)
+        elif rotate == 180:
+            src_image = src_image.transpose(Image.ROTATE_180)
+        elif rotate == 270:
+            src_image = src_image.transpose(Image.ROTATE_270)
+        else:
+            raise(Exception("Invalid value for 'rotate': {}".format(rotate)))
 
     # Open the 'title image'
     if title_img:

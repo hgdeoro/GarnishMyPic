@@ -59,7 +59,8 @@ class MyFileDropTarget(wx.FileDropTarget):
                 title_img=GMP_TITLE_IMAGE,
                 year=datetime.date.today().year,
                 technical_info=True,
-                exif_copyright=GMP_EXIF_COPYRIGHT
+                exif_copyright=GMP_EXIF_COPYRIGHT,
+                rotate=0,
             )
             self.window.updateText(" OK\n")
             self.window.refreshWindow()

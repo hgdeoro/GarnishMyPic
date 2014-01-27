@@ -89,6 +89,8 @@ if __name__ == '__main__':
         default=GMP_DEFAULT_MAX_SIZE)
     parser.add_argument("--technical-info", "-i", help="Include technical info (iso, F, exposure)",
         action='store_true')
+    parser.add_argument("--rotate", "-r", help="Rotate specified degrees counter-clockwise",
+        type=int, default=0)
     args = parser.parse_args()
 
     # TODO: check proper conversion of these int()s and show error message on error
@@ -121,7 +123,8 @@ if __name__ == '__main__':
             title_img=args.title_img,
             year=args.year,
             technical_info=args.technical_info,
-            exif_copyright=args.exif_copyright
+            exif_copyright=args.exif_copyright,
+            rotate=args.rotate,
         )
 
     sys.exit(exit_status)
